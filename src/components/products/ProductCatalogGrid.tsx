@@ -119,7 +119,7 @@ export function ProductCatalogGrid({ products, seriesList }: Props) {
               href={`/urunler/${product.category}/${product.slug}`}
               className="card-surface flex gap-0 overflow-hidden p-0 transition hover:-translate-y-0.5 hover:shadow-md"
             >
-              <div className="relative h-28 w-28 shrink-0 bg-[var(--ice)] sm:h-36 sm:w-40">
+              <div className="relative h-28 w-28 shrink-0 bg-[#121826] sm:h-36 sm:w-40">
                 <Image
                   src={product.image}
                   alt={product.name}

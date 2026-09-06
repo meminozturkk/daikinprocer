@@ -288,17 +288,34 @@ async function downloadImage(url, destPath, attempt = 1) {
       },
     });
     if (!res.ok) throw new Error(`img ${res.status}`);
-    const buf = Buffer.from(await res.arrayBuffer());
+    let buf = Buffer.from(await res.arrayBuffer());
     if (buf.length < 400) throw new Error("img too small");
+    // Flatten transparent product photos onto a dark studio background so white
+    // units remain visible on light page panels and through next/image JPEG.
+    try {
+      const sharp = (await import("sharp")).default;
+      const meta = await sharp(buf).metadata();
+      if (meta.hasAlpha) {
+        buf = await sharp(buf)
+          .flatten({ background: { r: 18, g: 24, b: 38 } })
+          .webp({ quality: 86 })
+          .toBuffer();
+        if (!destPath.endsWith(".webp")) {
+          destPath = destPath.replace(/\.[^.]+$/, ".webp");
+        }
+      }
+    } catch {
+      // keep original bytes if sharp unavailable
+    }
     await fs.writeFile(destPath, buf);
-    return true;
+    return { ok: true, destPath };
   } catch (err) {
     if (attempt < 4) {
       await sleep(attempt * 700);
       return downloadImage(url, destPath, attempt + 1);
     }
     console.warn(`  ! image failed ${url}: ${err.message}`);
-    return false;
+    return { ok: false, destPath };
   }
 }
 
@@ -370,14 +387,19 @@ async function main() {
 
     let image = FALLBACK_IMAGE[category] || FALLBACK_IMAGE["bireysel-klimalar"];
     if (imageUrl) {
-      const fileName = `${slug}${extFromUrl(imageUrl)}`;
-      const dest = path.join(IMG_DIR, fileName);
+      let fileName = `${slug}${extFromUrl(imageUrl)}`;
+      let dest = path.join(IMG_DIR, fileName);
       let ok = false;
       try {
         await fs.access(dest);
         ok = true;
       } catch {
-        ok = await downloadImage(imageUrl, dest);
+        const result = await downloadImage(imageUrl, dest);
+        ok = result.ok;
+        if (ok && result.destPath !== dest) {
+          dest = result.destPath;
+          fileName = path.basename(dest);
+        }
       }
       if (ok) image = `/sourced/catalog/${fileName}`;
       else missingImages.push({ slug, imageUrl });
