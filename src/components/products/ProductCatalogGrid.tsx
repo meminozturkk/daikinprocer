@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import type { Product } from "@/lib/types";
 
 type Props = {
@@ -13,6 +13,9 @@ type Props = {
 export function ProductCatalogGrid({ products, seriesList }: Props) {
   const [series, setSeries] = useState<string>("all");
   const [query, setQuery] = useState("");
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLocaleLowerCase("tr");
@@ -27,51 +30,80 @@ export function ProductCatalogGrid({ products, seriesList }: Props) {
     });
   }, [products, series, query]);
 
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const update = () => {
+      setCanScrollLeft(el.scrollLeft > 4);
+      setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+    };
+    update();
+    el.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => {
+      el.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, [seriesList]);
+
   return (
     <div>
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <label className="block w-full max-w-md text-sm text-[var(--slate)]">
-          <span className="sr-only">Ürün ara</span>
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Model veya seri ara…"
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[var(--navy)] outline-none focus:border-[var(--daikin-blue)]"
-          />
-        </label>
-        <p className="shrink-0 text-sm text-[var(--slate)]">
-          {filtered.length} / {products.length} ürün
-        </p>
+      <div className="mb-5 flex flex-col gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <label className="block w-full text-sm text-[var(--slate)] sm:max-w-md">
+            <span className="sr-only">Ürün ara</span>
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Model veya seri ara…"
+              className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[var(--navy)] outline-none focus:border-[var(--daikin-blue)]"
+            />
+          </label>
+          <p className="shrink-0 text-sm font-medium text-[var(--navy)]">
+            {filtered.length} / {products.length} ürün
+          </p>
+        </div>
       </div>
 
       {seriesList.length > 1 ? (
-        <div className="-mx-1 mb-8 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:thin]">
-          <button
-            type="button"
-            onClick={() => setSeries("all")}
-            className={`shrink-0 rounded-full px-3 py-1.5 text-sm transition ${
-              series === "all"
-                ? "bg-[var(--navy)] text-white"
-                : "bg-[var(--ice)] text-[var(--slate)] hover:text-[var(--navy)]"
-            }`}
+        <div className="relative mb-8">
+          <div
+            ref={scrollerRef}
+            className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            Tümü
-          </button>
-          {seriesList.map((s) => (
             <button
-              key={s}
               type="button"
-              onClick={() => setSeries(s)}
-              className={`shrink-0 rounded-full px-3 py-1.5 text-sm transition ${
-                series === s
+              onClick={() => setSeries("all")}
+              className={`min-h-9 shrink-0 rounded-full px-3 py-1.5 text-sm transition ${
+                series === "all"
                   ? "bg-[var(--navy)] text-white"
                   : "bg-[var(--ice)] text-[var(--slate)] hover:text-[var(--navy)]"
               }`}
             >
-              {s}
+              Tümü
             </button>
-          ))}
+            {seriesList.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setSeries(s)}
+                className={`min-h-9 shrink-0 rounded-full px-3 py-1.5 text-sm transition ${
+                  series === s
+                    ? "bg-[var(--navy)] text-white"
+                    : "bg-[var(--ice)] text-[var(--slate)] hover:text-[var(--navy)]"
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+          {canScrollLeft ? (
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-white to-transparent" />
+          ) : null}
+          {canScrollRight ? (
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white to-transparent" />
+          ) : null}
         </div>
       ) : null}
 
@@ -80,31 +112,31 @@ export function ProductCatalogGrid({ products, seriesList }: Props) {
           Bu filtreye uygun ürün bulunamadı.
         </p>
       ) : (
-        <div className="grid gap-5 md:grid-cols-2">
+        <div className="grid gap-4 sm:gap-5 md:grid-cols-2">
           {filtered.map((product) => (
             <Link
               key={product.slug}
               href={`/urunler/${product.category}/${product.slug}`}
               className="card-surface flex gap-0 overflow-hidden p-0 transition hover:-translate-y-0.5 hover:shadow-md"
             >
-              <div className="relative h-32 w-32 shrink-0 bg-[var(--ice)] sm:h-36 sm:w-40">
+              <div className="relative h-28 w-28 shrink-0 bg-[var(--ice)] sm:h-36 sm:w-40">
                 <Image
                   src={product.image}
                   alt={product.name}
                   fill
-                  className="object-contain p-3"
+                  className="object-contain p-2.5 sm:p-3"
                   sizes="160px"
                 />
               </div>
-              <div className="flex min-w-0 flex-1 flex-col justify-center p-4 pr-5">
-                <p className="text-xs font-medium uppercase tracking-wide text-[var(--daikin-blue)]">
+              <div className="flex min-w-0 flex-1 flex-col justify-center p-3.5 pr-4 sm:p-4 sm:pr-5">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-[var(--daikin-blue)] sm:text-xs">
                   {product.series}
                   {product.modelCode ? ` · ${product.modelCode}` : ""}
                 </p>
-                <h2 className="mt-1 line-clamp-2 text-base font-semibold leading-snug text-[var(--navy)] sm:text-lg">
+                <h2 className="mt-1 line-clamp-2 text-[15px] font-semibold leading-snug text-[var(--navy)] sm:text-lg">
                   {product.name}
                 </h2>
-                <p className="mt-2 line-clamp-2 text-sm text-[var(--slate)]">{product.summary}</p>
+                <p className="mt-1.5 line-clamp-2 text-sm text-[var(--slate)]">{product.summary}</p>
               </div>
             </Link>
           ))}
