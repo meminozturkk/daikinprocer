@@ -66,11 +66,17 @@ export default async function ProductPage({ params }: Props) {
               alt={`${product.name} görseli`}
               width={640}
               height={400}
-              className="h-auto w-full"
+              className="mx-auto h-auto w-full max-w-lg object-contain"
             />
           </div>
           <div>
-            <p className="eyebrow">{product.series} serisi</p>
+            <p className="eyebrow">
+              {product.series} serisi
+              {product.modelCode ? ` · ${product.modelCode}` : ""}
+            </p>
+            {product.subcategory ? (
+              <p className="mt-2 text-sm text-[var(--slate)]">{product.subcategory}</p>
+            ) : null}
             <ul className="mt-6 grid gap-2">
               {product.highlights.map((h) => (
                 <li key={h} className="flex gap-2 text-sm text-[var(--slate)]">

@@ -17,6 +17,12 @@ export type Product = {
   suitableFor: string[];
   image: string;
   featured?: boolean;
+  /** Daikin model code when known (e.g. FTXA50AW) */
+  modelCode?: string;
+  /** Leaf subcategory label from source catalog (e.g. Stylish Beyaz) */
+  subcategory?: string;
+  /** Extra gallery images under /sourced/catalog */
+  gallery?: string[];
 };
 
 export type Category = {

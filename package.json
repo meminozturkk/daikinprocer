@@ -9,7 +9,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
-    "quality": "node scripts/quality-gate.mjs"
+    "quality": "node scripts/quality-gate.mjs",
+    "import:metkan": "node scripts/import-metkan-catalog.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

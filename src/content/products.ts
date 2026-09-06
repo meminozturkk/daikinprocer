@@ -1,4 +1,5 @@
 import type { Category, Product } from "@/lib/types";
+import metkanProducts from "./generated/metkan-products.json";
 
 export const categories: Category[] = [
   {
@@ -9,7 +10,7 @@ export const categories: Category[] = [
       "Ev ve ofisler için Daikin duvar tipi inverter klimalar. Sessiz çalışma, yüksek enerji sınıfı ve akıllı kontrol.",
     seoTitle: "Daikin Bireysel Klima | Proser Grup Kartal",
     seoDescription:
-      "Daikin Sensira, Shira Plus, Perfera ve Emura bireysel klimalar. Proser Grup Daikin yetkili bayi Kartal / İstanbul.",
+      "Daikin Sensira, Shira Plus, Perfera, Emura ve Stylish bireysel klimalar. Proser Grup Daikin yetkili bayi Kartal / İstanbul.",
     image: "/sourced/products/duvar-tipi.jpg",
   },
   {
@@ -69,91 +70,8 @@ export const categories: Category[] = [
   },
 ];
 
-export const products: Product[] = [
-  {
-    slug: "sensira",
-    name: "Daikin Sensira",
-    category: "bireysel-klimalar",
-    series: "Sensira",
-    summary:
-      "Günlük kullanım için dengeli performans sunan inverter duvar tipi klima. Ev ve küçük ofisler için ideal giriş-orta segment çözüm.",
-    highlights: [
-      "Inverter teknolojisi",
-      "Yüksek enerji verimliliği",
-      "Sessiz çalışma profili",
-      "Kolay kullanım",
-    ],
-    specs: [
-      { label: "Tip", value: "Duvar tipi split" },
-      { label: "Kullanım", value: "Isıtma & soğutma" },
-      { label: "Kontrol", value: "Kumanda / uygulama desteği (modele göre)" },
-      { label: "Soğutucu", value: "R32" },
-    ],
-    suitableFor: ["Salon", "Yatak odası", "Küçük ofis"],
-    image: "/sourced/products/duvar-tipi.jpg",
-    featured: true,
-  },
-  {
-    slug: "shira-plus",
-    name: "Daikin Shira Plus",
-    category: "bireysel-klimalar",
-    series: "Shira Plus",
-    summary:
-      "Flash Streamer hava temizleme, akıllı göz ve yüksek enerji sınıfı ile konfor odaklı bireysel klima.",
-    highlights: [
-      "Flash Streamer",
-      "Akıllı göz",
-      "3 boyutlu hava üfleme",
-      "A+++ enerji sınıfı (modele göre)",
-    ],
-    specs: [
-      { label: "Tip", value: "Duvar tipi split" },
-      { label: "Öne çıkan", value: "Hava kalitesi + konfor" },
-      { label: "Kontrol", value: "ONECTA uygulaması (uyumlu modeller)" },
-      { label: "Soğutucu", value: "R32" },
-    ],
-    suitableFor: ["Yaşam alanları", "Yatak odası", "Ofis odaları"],
-    image: "/sourced/products/duvar-tipi.jpg",
-    featured: true,
-  },
-  {
-    slug: "perfera",
-    name: "Daikin Perfera",
-    category: "bireysel-klimalar",
-    series: "Perfera",
-    summary:
-      "Üst düzey konfor, hava kalitesi ve tasarım arayanlar için premium bireysel klima serisi.",
-    highlights: [
-      "Premium konfor",
-      "Gelişmiş hava üfleme",
-      "Yüksek verimlilik",
-      "Akıllı kontrol",
-    ],
-    specs: [
-      { label: "Tip", value: "Duvar tipi split" },
-      { label: "Segment", value: "Premium bireysel" },
-      { label: "Soğutucu", value: "R32" },
-    ],
-    suitableFor: ["Villa", "Yüksek konfor beklentili konut", "Ofis"],
-    image: "/sourced/products/duvar-tipi.jpg",
-    featured: true,
-  },
-  {
-    slug: "emura",
-    name: "Daikin Emura",
-    category: "bireysel-klimalar",
-    series: "Emura",
-    summary:
-      "Ödüllü tasarım dili ile mimariye uyum sağlayan, yüksek performanslı duvar tipi klima.",
-    highlights: ["İkonik tasarım", "Sessiz çalışma", "Akıllı özellikler", "Yüksek verim"],
-    specs: [
-      { label: "Tip", value: "Duvar tipi split" },
-      { label: "Segment", value: "Tasarım / premium" },
-      { label: "Soğutucu", value: "R32" },
-    ],
-    suitableFor: ["Modern konut", "Showroom", "Tasarım ofis"],
-    image: "/sourced/products/duvar-tipi.jpg",
-  },
+/** Categories not covered by the Metkan SKU feed — keep series-level entries. */
+const legacyProducts: Product[] = [
   {
     slug: "multi-split-sistem",
     name: "Daikin Multi Split",
@@ -195,27 +113,6 @@ export const products: Product[] = [
     ],
     suitableFor: ["Mağaza", "Restoran", "Klinik", "Ofis"],
     image: "/sourced/products/ticari.jpg",
-    featured: true,
-  },
-  {
-    slug: "vrv",
-    name: "Daikin VRV",
-    category: "vrv-sistemleri",
-    series: "VRV",
-    summary:
-      "Büyük yapılarda zon bazlı kontrol, yüksek verimlilik ve esnek iç ünite kombinasyonları sunan merkezi sistem.",
-    highlights: [
-      "Merkezi sistem mimarisi",
-      "Yüksek iç ünite sayısı",
-      "Enerji verimli işletme",
-      "Bina otomasyonuna entegrasyon",
-    ],
-    specs: [
-      { label: "Tip", value: "VRV / VRF merkezi" },
-      { label: "Uygulama", value: "Ofis, otel, AVM, endüstriyel" },
-    ],
-    suitableFor: ["Ofis binası", "Otel", "AVM", "Üretim alanı"],
-    image: "/sourced/products/vrf.jpg",
     featured: true,
   },
   {
@@ -261,6 +158,11 @@ export const products: Product[] = [
   },
 ];
 
+export const products: Product[] = [
+  ...(metkanProducts as Product[]),
+  ...legacyProducts,
+];
+
 export function getCategory(slug: string) {
   return categories.find((c) => c.slug === slug);
 }
@@ -275,4 +177,10 @@ export function getProduct(slug: string) {
 
 export function getFeaturedProducts() {
   return products.filter((p) => p.featured);
+}
+
+export function getSeriesForCategory(slug: string) {
+  return [
+    ...new Set(getProductsByCategory(slug).map((p) => p.series).filter(Boolean)),
+  ].sort((a, b) => a.localeCompare(b, "tr"));
 }
