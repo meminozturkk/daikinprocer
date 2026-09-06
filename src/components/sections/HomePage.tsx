@@ -230,13 +230,13 @@ export function HomePage() {
                   src={product.image}
                   alt={product.name}
                   fill
-                  className="object-cover"
+                  className="object-contain p-6"
                   sizes="(max-width:768px) 100vw, 33vw"
                 />
               </div>
               <div className="p-5">
-                <h3 className="text-lg font-semibold text-[var(--navy)]">{product.name}</h3>
-                <p className="mt-2 text-sm text-[var(--slate)]">{product.summary}</p>
+                <h3 className="line-clamp-2 text-lg font-semibold text-[var(--navy)]">{product.name}</h3>
+                <p className="mt-2 line-clamp-3 text-sm text-[var(--slate)]">{product.summary}</p>
                 <p className="mt-4 text-sm font-semibold text-[var(--daikin-blue)]">Teklif al →</p>
               </div>
             </Link>

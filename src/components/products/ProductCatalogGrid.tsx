@@ -19,9 +19,10 @@ export function ProductCatalogGrid({ products, seriesList }: Props) {
     return products.filter((p) => {
       if (series !== "all" && p.series !== series) return false;
       if (!q) return true;
-      const hay = `${p.name} ${p.series} ${p.modelCode ?? ""} ${p.subcategory ?? ""}`.toLocaleLowerCase(
-        "tr",
-      );
+      const hay =
+        `${p.name} ${p.series} ${p.modelCode ?? ""} ${p.subcategory ?? ""}`.toLocaleLowerCase(
+          "tr",
+        );
       return hay.includes(q);
     });
   }, [products, series, query]);
@@ -39,17 +40,17 @@ export function ProductCatalogGrid({ products, seriesList }: Props) {
             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[var(--navy)] outline-none focus:border-[var(--daikin-blue)]"
           />
         </label>
-        <p className="text-sm text-[var(--slate)]">
+        <p className="shrink-0 text-sm text-[var(--slate)]">
           {filtered.length} / {products.length} ürün
         </p>
       </div>
 
       {seriesList.length > 1 ? (
-        <div className="mb-8 flex flex-wrap gap-2">
+        <div className="-mx-1 mb-8 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:thin]">
           <button
             type="button"
             onClick={() => setSeries("all")}
-            className={`rounded-full px-3 py-1.5 text-sm transition ${
+            className={`shrink-0 rounded-full px-3 py-1.5 text-sm transition ${
               series === "all"
                 ? "bg-[var(--navy)] text-white"
                 : "bg-[var(--ice)] text-[var(--slate)] hover:text-[var(--navy)]"
@@ -62,7 +63,7 @@ export function ProductCatalogGrid({ products, seriesList }: Props) {
               key={s}
               type="button"
               onClick={() => setSeries(s)}
-              className={`rounded-full px-3 py-1.5 text-sm transition ${
+              className={`shrink-0 rounded-full px-3 py-1.5 text-sm transition ${
                 series === s
                   ? "bg-[var(--navy)] text-white"
                   : "bg-[var(--ice)] text-[var(--slate)] hover:text-[var(--navy)]"
@@ -84,23 +85,25 @@ export function ProductCatalogGrid({ products, seriesList }: Props) {
             <Link
               key={product.slug}
               href={`/urunler/${product.category}/${product.slug}`}
-              className="card-surface flex gap-4 overflow-hidden p-0"
+              className="card-surface flex gap-0 overflow-hidden p-0 transition hover:-translate-y-0.5 hover:shadow-md"
             >
-              <div className="relative h-28 w-36 shrink-0 bg-[var(--ice)] sm:h-32 sm:w-44">
+              <div className="relative h-32 w-32 shrink-0 bg-[var(--ice)] sm:h-36 sm:w-40">
                 <Image
                   src={product.image}
                   alt={product.name}
                   fill
-                  className="object-contain p-2"
-                  sizes="176px"
+                  className="object-contain p-3"
+                  sizes="160px"
                 />
               </div>
-              <div className="p-4 pr-5">
+              <div className="flex min-w-0 flex-1 flex-col justify-center p-4 pr-5">
                 <p className="text-xs font-medium uppercase tracking-wide text-[var(--daikin-blue)]">
                   {product.series}
                   {product.modelCode ? ` · ${product.modelCode}` : ""}
                 </p>
-                <h2 className="mt-1 text-lg font-semibold text-[var(--navy)]">{product.name}</h2>
+                <h2 className="mt-1 line-clamp-2 text-base font-semibold leading-snug text-[var(--navy)] sm:text-lg">
+                  {product.name}
+                </h2>
                 <p className="mt-2 line-clamp-2 text-sm text-[var(--slate)]">{product.summary}</p>
               </div>
             </Link>
