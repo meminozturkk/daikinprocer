@@ -60,13 +60,13 @@ export default async function ProductPage({ params }: Props) {
       />
       <Section>
         <div className="grid gap-10 lg:grid-cols-2">
-          <div className="card-surface flex min-h-[280px] items-center justify-center bg-[var(--ice)] p-6 sm:min-h-[360px] sm:p-10">
+          <div className="card-surface flex min-h-[280px] items-center justify-center bg-[linear-gradient(180deg,#e8eef5_0%,#f4f7fb_100%)] p-6 sm:min-h-[360px] sm:p-10">
             <Image
               src={product.image}
               alt={`${product.name} görseli`}
               width={640}
               height={480}
-              className="mx-auto h-auto max-h-[420px] w-full max-w-lg object-contain"
+              className="mx-auto h-auto max-h-[420px] w-full max-w-lg object-contain drop-shadow-sm"
               priority
             />
           </div>
