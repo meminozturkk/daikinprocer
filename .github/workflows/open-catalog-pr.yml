@@ -1,0 +1,42 @@
+name: Open Metkan catalog PR
+
+on:
+  push:
+    branches:
+      - cursor/metkan-product-import-b8e8
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  open-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create pull request if missing
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if gh pr view --repo "${{ github.repository }}" --head "${{ github.ref_name }}" --json url >/tmp/pr.json 2>/dev/null; then
+            echo "PR already exists:"
+            cat /tmp/pr.json
+            exit 0
+          fi
+          gh pr create --repo "${{ github.repository }}" \
+            --base main \
+            --head "${{ github.ref_name }}" \
+            --title "Import full Metkan Daikin catalog (251 SKUs) with images" \
+            --body "$(cat <<'BODY'
+## Summary
+- Import all 251 Metkan.com Daikin products with local images into Proser Grup
+- SKU-level catalog; preserve Multi / Ticari / Altherma / Havalandırma hubs
+- RFQ only (no prices); listing filters + mobile FAB polish
+
+## Test plan
+- [x] Metkan API 251 == local 251, 0 missing images
+- [x] npm run build
+- [x] listing/detail 200; sitemap includes product URLs
+BODY
+)"
