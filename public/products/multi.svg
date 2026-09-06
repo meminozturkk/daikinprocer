@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#E8F1F7"/>
+      <stop offset="100%" stop-color="#F7FBFE"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="400" rx="24" fill="url(#g)"/>
+  <rect x="80" y="120" width="280" height="70" rx="16" fill="#ffffff" stroke="#00A0E3" stroke-width="3"/>
+  <circle cx="460" cy="200" r="70" fill="#00A0E3" opacity="0.15"/>
+  <path d="M420 200 C450 160, 490 160, 520 200 C490 240, 450 240, 420 200 Z" fill="#00A0E3" opacity="0.35"/>
+  <text x="80" y="320" fill="#0B1F33" font-family="Arial,sans-serif" font-size="28" font-weight="700">multi</text>
+  <text x="80" y="350" fill="#5B6B7C" font-family="Arial,sans-serif" font-size="14">Daikin ürün görseli — resmi medya paketi ile değiştirin</text>
+</svg>
