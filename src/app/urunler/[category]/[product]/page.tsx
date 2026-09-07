@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props) {
   const product = getProduct(slug);
   if (!product) return {};
   return createMetadata({
-    title: `${product.name} | Daikin`,
+    title: product.name,
     description: product.summary,
     path: `/urunler/${product.category}/${product.slug}`,
   });
@@ -60,17 +60,24 @@ export default async function ProductPage({ params }: Props) {
       />
       <Section>
         <div className="grid gap-10 lg:grid-cols-2">
-          <div className="card-surface bg-[var(--ice)] p-8">
+          <div className="card-surface relative aspect-square w-full overflow-hidden bg-[#121826] sm:aspect-[4/3]">
             <Image
               src={product.image}
               alt={`${product.name} görseli`}
-              width={640}
-              height={400}
-              className="h-auto w-full"
+              fill
+              className="object-contain p-6 sm:p-10"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              priority
             />
           </div>
           <div>
-            <p className="eyebrow">{product.series} serisi</p>
+            <p className="eyebrow">
+              {product.series} serisi
+              {product.modelCode ? ` · ${product.modelCode}` : ""}
+            </p>
+            {product.subcategory ? (
+              <p className="mt-2 text-sm text-[var(--slate)]">{product.subcategory}</p>
+            ) : null}
             <ul className="mt-6 grid gap-2">
               {product.highlights.map((h) => (
                 <li key={h} className="flex gap-2 text-sm text-[var(--slate)]">

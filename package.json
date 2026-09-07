@@ -9,7 +9,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
-    "quality": "node scripts/quality-gate.mjs"
+    "quality": "node scripts/quality-gate.mjs",
+    "import:metkan": "node scripts/import-metkan-catalog.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -17,6 +18,7 @@
     "next": "16.3.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "sharp": "^0.34.5",
     "zod": "^4.5.4"
   },
   "devDependencies": {

@@ -77,6 +77,32 @@ const nextConfig: NextConfig = {
         destination: "/gizlilik",
         permanent: true,
       },
+      // Former series-level product pages → category hubs (SKU catalog replaced them)
+      {
+        source: "/urunler/bireysel-klimalar/sensira",
+        destination: "/urunler/bireysel-klimalar",
+        permanent: true,
+      },
+      {
+        source: "/urunler/bireysel-klimalar/shira-plus",
+        destination: "/urunler/bireysel-klimalar",
+        permanent: true,
+      },
+      {
+        source: "/urunler/bireysel-klimalar/perfera",
+        destination: "/urunler/bireysel-klimalar",
+        permanent: true,
+      },
+      {
+        source: "/urunler/bireysel-klimalar/emura",
+        destination: "/urunler/bireysel-klimalar",
+        permanent: true,
+      },
+      {
+        source: "/urunler/vrv-sistemleri/vrv",
+        destination: "/urunler/vrv-sistemleri",
+        permanent: true,
+      },
     ];
   },
 };

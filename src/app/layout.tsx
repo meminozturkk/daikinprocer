@@ -28,7 +28,9 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="tr" className={`${manrope.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-white text-[var(--foreground)]">
@@ -39,7 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           İçeriğe geç
         </a>
         <Header />
-        <main id="main" className="flex-1">
+        <main id="main" className="flex-1 pb-32 md:pb-28">
           {children}
         </main>
         <Footer />

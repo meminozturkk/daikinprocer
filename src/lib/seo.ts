@@ -19,7 +19,8 @@ export function createMetadata({
     : `${title} | ${contact.brandName}`;
 
   return {
-    title: fullTitle,
+    // Bypass root layout title template to avoid "Brand | Brand" duplication.
+    title: { absolute: fullTitle },
     description,
     metadataBase: new URL(siteConfig.siteUrl),
     alternates: { canonical: url },
