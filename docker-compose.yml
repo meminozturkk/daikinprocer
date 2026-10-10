@@ -12,6 +12,8 @@ services:
       - PORT=3333
       - HOSTNAME=0.0.0.0
       - NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-https://www.prosergrup.com}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-proser2026}
+      - ADMIN_SECRET=${ADMIN_SECRET:-daikinprocer-secure-secret-key-2026}
     env_file:
       - path: .env
         required: false

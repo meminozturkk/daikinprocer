@@ -8,7 +8,8 @@ const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
 export function verifyAdminPassword(password: string): boolean {
   if (!password || typeof password !== "string") return false;
-  return password === ADMIN_PASSWORD;
+  const expected = (process.env.ADMIN_PASSWORD || ADMIN_PASSWORD).trim();
+  return password.trim() === expected;
 }
 
 export function createAdminSessionToken(): string {
