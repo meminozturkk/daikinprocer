@@ -3,12 +3,21 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { SiteContent } from "@/lib/site-content-types";
 import { defaultSiteContent } from "@/lib/site-content-types";
 import type { BlogPost } from "@/lib/types";
 
-type TabKey = "contact" | "hero" | "announcement" | "trust" | "blog";
+type TabKey = "contact" | "hero" | "announcement" | "trust" | "blog" | "media";
+
+export type CatalogProductItem = {
+  slug: string;
+  name: string;
+  category: string;
+  series: string;
+  modelCode?: string;
+  defaultImage: string;
+};
 
 type BlogPostForm = {
   slug: string;
@@ -21,7 +30,14 @@ type BlogPostForm = {
   contentString: string;
 };
 
-const IMAGE_PRESETS = [
+type MediaItem = {
+  name: string;
+  url: string;
+  size: number;
+  createdAt: number;
+};
+
+const BLOG_IMAGE_PRESETS = [
   { label: "Klima Seçimi", url: "/sourced/blog/klima-secimi.jpg" },
   { label: "Duvar Tipi", url: "/sourced/products/duvar-tipi.jpg" },
   { label: "Multi Split", url: "/sourced/products/multi.jpg" },
@@ -29,6 +45,13 @@ const IMAGE_PRESETS = [
   { label: "Isı Pompası", url: "/sourced/products/isi-pompasi.jpg" },
   { label: "Teknik Servis", url: "/sourced/misc/service.jpg" },
   { label: "Modern Konut", url: "/sourced/hero/slide-1.jpg" },
+];
+
+const HERO_IMAGE_PRESETS = [
+  { label: "Modern Salon (Varsayılan)", url: "/sourced/hero/slide-1.jpg" },
+  { label: "Modern Mimari 2", url: "/sourced/hero/slide-2.jpg" },
+  { label: "Modern Mimari 3", url: "/sourced/hero/slide-3.jpg" },
+  { label: "VRF Vitrin", url: "/sourced/hero/vrf-showcase.png" },
 ];
 
 function slugify(text: string): string {
@@ -52,15 +75,56 @@ function slugify(text: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-export function AdminDashboard({ initialContent }: { initialContent: SiteContent }) {
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+}
+
+export function AdminDashboard({
+  initialContent,
+  catalogProducts = [],
+}: {
+  initialContent: SiteContent;
+  catalogProducts?: CatalogProductItem[];
+}) {
   const router = useRouter();
   const [content, setContent] = useState<SiteContent>(initialContent);
   const [activeTab, setActiveTab] = useState<TabKey>("contact");
   const [saving, setSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
+  // Media Library State
+  const [mediaFiles, setMediaFiles] = useState<MediaItem[]>([]);
+  const [mediaLoading, setMediaLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [mediaSearchQuery, setMediaSearchQuery] = useState("");
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+
+  // Media Sub-tabs: 'uploads' | 'catalog' | 'products'
+  const [mediaSubTab, setMediaSubTab] = useState<"uploads" | "catalog" | "products">("uploads");
+
+  // Catalog Files State
+  const [catalogFiles, setCatalogFiles] = useState<MediaItem[]>([]);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [catalogSearchQuery, setCatalogSearchQuery] = useState("");
+
+  // Product Images Override State
+  const [productSearchQuery, setProductSearchQuery] = useState("");
+  const [productCategoryFilter, setProductCategoryFilter] = useState("all");
+  const [selectedProductToEdit, setSelectedProductToEdit] = useState<CatalogProductItem | null>(null);
+  const [pickerSearchQuery, setPickerSearchQuery] = useState("");
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const catalogFileInputRef = useRef<HTMLInputElement>(null);
+  const blogFileInputRef = useRef<HTMLInputElement>(null);
+  const heroFileInputRef = useRef<HTMLInputElement>(null);
+  const productCustomFileInputRef = useRef<HTMLInputElement>(null);
+
   // Blog Editor State
-  const [editingPostIndex, setEditingPostIndex] = useState<number | null>(null); // null: closed, -1: new post, >=0: edit existing
+  const [editingPostIndex, setEditingPostIndex] = useState<number | null>(null);
   const [postFormData, setPostFormData] = useState<BlogPostForm>({
     slug: "",
     title: "",
@@ -76,6 +140,42 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
   const [blogSearchQuery, setBlogSearchQuery] = useState("");
   const [showPreview, setShowPreview] = useState(false);
 
+  // Fetch Media on Mount
+  const fetchMediaFiles = async () => {
+    try {
+      setMediaLoading(true);
+      const res = await fetch("/api/admin/media");
+      const data = await res.json();
+      if (data.ok && Array.isArray(data.files)) {
+        setMediaFiles(data.files);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setMediaLoading(false);
+    }
+  };
+
+  const fetchCatalogFiles = async () => {
+    try {
+      setCatalogLoading(true);
+      const res = await fetch("/api/admin/catalog");
+      const data = await res.json();
+      if (data.ok && Array.isArray(data.files)) {
+        setCatalogFiles(data.files);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setCatalogLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMediaFiles();
+    fetchCatalogFiles();
+  }, []);
+
   const handleLogout = async () => {
     await fetch("/api/admin/logout", { method: "POST" });
     router.push("/admin/login");
@@ -83,7 +183,7 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
   };
 
   const handleResetToDefault = () => {
-    if (confirm("Tüm alanları ve blog yazılarını orijinal varsayılan değerlere sıfırlamak istediğinize emin misiniz?")) {
+    if (confirm("Tüm alanları, blog yazılarını ve ürün görsellerini varsayılan değerlere sıfırlamak istediğinize emin misiniz?")) {
       setContent(defaultSiteContent);
       setEditingPostIndex(null);
       setStatusMessage({ type: "success", text: "Varsayılan değerler yüklendi. Değişiklikleri yayına almak için 'Kaydet' butonuna basın." });
@@ -116,6 +216,227 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Upload Handlers
+  const uploadSingleFile = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch("/api/admin/media", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+      throw new Error(data.message || "Fotoğraf yüklenemedi");
+    }
+
+    await fetchMediaFiles();
+    return data.file.url;
+  };
+
+  const handleMediaFilesUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    setStatusMessage(null);
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        await uploadSingleFile(files[i]);
+      }
+      setStatusMessage({ type: "success", text: `${files.length} adet fotoğraf başarıyla yüklendi!` });
+    } catch (err: unknown) {
+      setStatusMessage({
+        type: "error",
+        text: err instanceof Error ? err.message : "Görsel yüklenirken bir hata oluştu",
+      });
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleCatalogFilesUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    setStatusMessage(null);
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const formData = new FormData();
+        formData.append("file", files[i]);
+        const res = await fetch("/api/admin/catalog", { method: "POST", body: formData });
+        const data = await res.json();
+        if (!res.ok || !data.ok) throw new Error(data.message || "Katalog görseli yüklenemedi");
+      }
+      await fetchCatalogFiles();
+      setStatusMessage({ type: "success", text: `${files.length} adet katalog görseli başarıyla yüklendi!` });
+    } catch (err: unknown) {
+      setStatusMessage({
+        type: "error",
+        text: err instanceof Error ? err.message : "Katalog görseli yüklenirken hata oluştu",
+      });
+    } finally {
+      setUploading(false);
+      if (catalogFileInputRef.current) catalogFileInputRef.current.value = "";
+    }
+  };
+
+  const handleDeleteMedia = async (filename: string) => {
+    if (!confirm(`"${filename}" adlı fotoğrafı kalıcı olarak silmek istediğinize emin misiniz?`)) return;
+
+    try {
+      const res = await fetch("/api/admin/media", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        throw new Error(data.message || "Fotoğraf silinemedi");
+      }
+
+      setMediaFiles((prev) => prev.filter((m) => m.name !== filename));
+      setStatusMessage({ type: "success", text: `"${filename}" fotoğrafı silindi.` });
+    } catch (err: unknown) {
+      setStatusMessage({
+        type: "error",
+        text: err instanceof Error ? err.message : "Silme işlemi sırasında hata oluştu",
+      });
+    }
+  };
+
+  const handleDeleteCatalogFile = async (filename: string) => {
+    if (!confirm(`"${filename}" katalog görselini arşivden silmek istediğinize emin misiniz?`)) return;
+
+    try {
+      const res = await fetch("/api/admin/catalog", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        throw new Error(data.message || "Katalog görseli silinemedi");
+      }
+
+      setCatalogFiles((prev) => prev.filter((m) => m.name !== filename));
+      setStatusMessage({ type: "success", text: `"${filename}" katalog görseli silindi.` });
+    } catch (err: unknown) {
+      setStatusMessage({
+        type: "error",
+        text: err instanceof Error ? err.message : "Silme işlemi sırasında hata oluştu",
+      });
+    }
+  };
+
+  const handleCopyLink = (url: string) => {
+    navigator.clipboard.writeText(url);
+    setCopiedUrl(url);
+    setTimeout(() => setCopiedUrl(null), 2500);
+  };
+
+  // Product Image Overrides
+  const handleSetProductImage = (productSlug: string, imageUrl: string) => {
+    setContent({
+      ...content,
+      productImages: {
+        ...(content.productImages || {}),
+        [productSlug]: imageUrl,
+      },
+    });
+    setSelectedProductToEdit(null);
+    setStatusMessage({
+      type: "success",
+      text: "Ürün görseli başarıyla atandı! Değişiklikleri yayına almak için 'Değişiklikleri Kaydet' butonuna basınız.",
+    });
+  };
+
+  const handleResetProductImage = (productSlug: string) => {
+    const updated = { ...(content.productImages || {}) };
+    delete updated[productSlug];
+    setContent({
+      ...content,
+      productImages: updated,
+    });
+    setStatusMessage({
+      type: "success",
+      text: "Ürün görseli varsayılan katalog görseline sıfırlandı. Yayına almak için 'Değişiklikleri Kaydet' butonuna basınız.",
+    });
+  };
+
+  const handleProductDirectFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedProductToEdit) return;
+
+    setUploading(true);
+    try {
+      const newUrl = await uploadSingleFile(file);
+      handleSetProductImage(selectedProductToEdit.slug, newUrl);
+    } catch (err: unknown) {
+      setStatusMessage({
+        type: "error",
+        text: err instanceof Error ? err.message : "Görsel yüklenemedi",
+      });
+    } finally {
+      setUploading(false);
+      if (productCustomFileInputRef.current) productCustomFileInputRef.current.value = "";
+    }
+  };
+
+  // Direct Upload for Hero
+  const handleHeroFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const newUrl = await uploadSingleFile(file);
+      setContent({
+        ...content,
+        hero: { ...content.hero, image: newUrl },
+      });
+      setStatusMessage({
+        type: "success",
+        text: "Hero görseli başarıyla yüklendi! Değişiklikleri yayına almak için 'Değişiklikleri Kaydet' butonuna basınız.",
+      });
+    } catch (err: unknown) {
+      setStatusMessage({
+        type: "error",
+        text: err instanceof Error ? err.message : "Fotoğraf yüklenemedi",
+      });
+    } finally {
+      setUploading(false);
+      if (heroFileInputRef.current) heroFileInputRef.current.value = "";
+    }
+  };
+
+  // Direct Upload for Blog
+  const handleBlogFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const newUrl = await uploadSingleFile(file);
+      setPostFormData((prev) => ({ ...prev, image: newUrl }));
+      setStatusMessage({
+        type: "success",
+        text: "Kapak görseli yüklendi ve blog yazısına uygulandı!",
+      });
+    } catch (err: unknown) {
+      setStatusMessage({
+        type: "error",
+        text: err instanceof Error ? err.message : "Fotoğraf yüklenemedi",
+      });
+    } finally {
+      setUploading(false);
+      if (blogFileInputRef.current) blogFileInputRef.current.value = "";
     }
   };
 
@@ -207,7 +528,6 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
       return;
     }
 
-    // Slug conflict check
     const isConflict = content.posts.some(
       (p, idx) => idx !== editingPostIndex && p.slug === cleanSlug
     );
@@ -229,7 +549,6 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
 
     let updatedPosts = [...(content.posts || [])];
     if (editingPostIndex === -1) {
-      // New post added at the top
       updatedPosts = [updatedPost, ...updatedPosts];
     } else if (editingPostIndex !== null) {
       updatedPosts[editingPostIndex] = updatedPost;
@@ -241,7 +560,7 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
       type: "success",
       text: editingPostIndex === -1
         ? `"${cleanTitle}" yazısı listeye eklendi. Sitede yayına almak için yukarıdaki "Değişiklikleri Kaydet" butonuna basınız.`
-        : `"${cleanTitle}" yazısı güncellendi. Sitede yayına almak için yukarıdaki "Değişiklikleri Kaydet" butonuna basınız.`,
+        : `"${cleanTitle}" yazısı güncellendi. Sitede yayına almak için yukarıdaki "Değişiklikleri Kaydet" butonuna basınız.`
     });
   };
 
@@ -280,6 +599,29 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
       post.tags.some((t) => t.toLowerCase().includes(q))
     );
   });
+
+  const filteredMedia = mediaFiles.filter((item) => {
+    if (!mediaSearchQuery.trim()) return true;
+    return item.name.toLowerCase().includes(mediaSearchQuery.toLowerCase());
+  });
+
+  const filteredCatalog = catalogFiles.filter((item) => {
+    if (!catalogSearchQuery.trim()) return true;
+    return item.name.toLowerCase().includes(catalogSearchQuery.toLowerCase());
+  });
+
+  const filteredProducts = catalogProducts.filter((product) => {
+    if (productCategoryFilter !== "all" && product.category !== productCategoryFilter) return false;
+    if (!productSearchQuery.trim()) return true;
+    const q = productSearchQuery.toLowerCase();
+    return (
+      product.name.toLowerCase().includes(q) ||
+      product.series.toLowerCase().includes(q) ||
+      (product.modelCode && product.modelCode.toLowerCase().includes(q))
+    );
+  });
+
+  const customProductCount = Object.keys(content.productImages || {}).length;
 
   return (
     <div className="min-h-screen bg-slate-100 pb-20">
@@ -327,9 +669,9 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
       <main className="mx-auto max-w-6xl px-4 pt-8 sm:px-6">
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">İçerik & Blog Yönetimi</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">İçerik, Medya & Katalog Yönetimi</h1>
             <p className="mt-1 text-sm text-slate-500">
-              Telefon numaraları, duyuru bandı, ana sayfa metinleri ve blog yazılarını kolayca düzenleyin.
+              Telefon numaraları, blog yazıları, katalog görselleri ve Daikin ürün fotoğraflarını yönetin.
             </p>
           </div>
 
@@ -373,6 +715,10 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
             { key: "announcement", label: "📢 Duyuru Bandı" },
             { key: "trust", label: "🛡️ Güven Unsurları" },
             { key: "blog", label: `📝 Blog Yönetimi (${content.posts?.length || 0})` },
+            {
+              key: "media",
+              label: `📸 Fotoğraf & Katalog (${mediaFiles.length + (catalogFiles.length || 251)})`,
+            },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -522,14 +868,111 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
             </div>
           )}
 
-          {/* TAB 2: Ana Sayfa Metinleri */}
+          {/* TAB 2: Ana Sayfa Metinleri & Hero Görseli */}
           {activeTab === "hero" && (
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-5">
-              <h2 className="text-base font-bold text-slate-900">Ana Sayfa (Hero) Başlık ve Açıklamaları</h2>
-              <p className="text-xs text-slate-500">
-                Ana sayfaya ilk girildiğinde görünen karşılama alanının metinleri.
-              </p>
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
+              <div>
+                <h2 className="text-base font-bold text-slate-900">Ana Sayfa (Hero) Karşılama Alanı</h2>
+                <p className="text-xs text-slate-500">
+                  Ana sayfaya ilk girildiğinde görünen başlık, sayaç ve arka plan fotoğrafı.
+                </p>
+              </div>
 
+              {/* Hero Background Image Picker & Upload */}
+              <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-5 space-y-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                      Hero Arka Plan Fotoğrafı
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Ana sayfanın üst karşılama alanındaki büyük arka plan fotoğrafı.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      ref={heroFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleHeroFileUpload}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      disabled={uploading}
+                      onClick={() => heroFileInputRef.current?.click()}
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-sky-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm hover:bg-sky-500 disabled:opacity-50 transition"
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                      </svg>
+                      <span>{uploading ? "Yükleniyor..." : "Bilgisayardan Fotoğraf Yükle"}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                  <div className="relative h-28 w-44 shrink-0 overflow-hidden rounded-xl border border-slate-300 bg-slate-900 shadow">
+                    <Image
+                      src={content.hero.image || "/sourced/hero/slide-1.jpg"}
+                      alt="Hero Önizleme"
+                      fill
+                      className="object-cover opacity-80"
+                      unoptimized
+                    />
+                    <span className="absolute bottom-1 right-1 rounded bg-black/70 px-1.5 py-0.5 text-[9px] font-medium text-white">
+                      Aktif Görsel
+                    </span>
+                  </div>
+
+                  <div className="flex-1 space-y-2">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-600">Görsel URL / Yolu</label>
+                      <input
+                        type="text"
+                        value={content.hero.image || "/sourced/hero/slide-1.jpg"}
+                        onChange={(e) =>
+                          setContent({
+                            ...content,
+                            hero: { ...content.hero, image: e.target.value },
+                          })
+                        }
+                        className="mt-0.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-mono text-slate-800 focus:border-sky-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <span className="block text-[11px] font-semibold text-slate-500">
+                        Hazır Şablonlar:
+                      </span>
+                      <div className="mt-1 flex flex-wrap gap-1.5">
+                        {HERO_IMAGE_PRESETS.map((preset) => (
+                          <button
+                            key={preset.url}
+                            type="button"
+                            onClick={() =>
+                              setContent({
+                                ...content,
+                                hero: { ...content.hero, image: preset.url },
+                              })
+                            }
+                            className={`rounded-lg px-2.5 py-1 text-xs font-medium transition ${
+                              (content.hero.image || "/sourced/hero/slide-1.jpg") === preset.url
+                                ? "bg-slate-900 text-white shadow-sm"
+                                : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+                            }`}
+                          >
+                            {preset.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Hero Metinleri */}
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700">Üst Rozet Metni</label>
@@ -904,16 +1347,40 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
                       </div>
                     </div>
 
-                    {/* Kapak Görseli Seçimi & Önizleme */}
+                    {/* Kapak Görseli Seçimi, Yükleme & Önizleme */}
                     <div className="rounded-xl border border-slate-100 bg-slate-50/60 p-4 space-y-3">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex-1">
-                          <label className="block text-xs font-semibold text-slate-700">Kapak Görseli Yolu / URL</label>
+                          <div className="flex items-center justify-between">
+                            <label className="block text-xs font-semibold text-slate-700">
+                              Kapak Görseli Yolu / URL
+                            </label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                ref={blogFileInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleBlogFileUpload}
+                                className="hidden"
+                              />
+                              <button
+                                type="button"
+                                disabled={uploading}
+                                onClick={() => blogFileInputRef.current?.click()}
+                                className="text-xs font-semibold text-sky-600 hover:text-sky-700 hover:underline flex items-center gap-1"
+                              >
+                                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                </svg>
+                                <span>{uploading ? "Yükleniyor..." : "Bilgisayardan Fotoğraf Yükle"}</span>
+                              </button>
+                            </div>
+                          </div>
                           <input
                             type="text"
                             value={postFormData.image}
                             onChange={(e) => setPostFormData({ ...postFormData, image: e.target.value })}
-                            placeholder="/sourced/blog/klima-secimi.jpg"
+                            placeholder="/sourced/blog/klima-secimi.jpg veya /uploads/..."
                             className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
                           />
                         </div>
@@ -930,12 +1397,13 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
                         )}
                       </div>
 
+                      {/* Hazır Katalog Şablonları */}
                       <div>
                         <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                          Hazır Kapak Görselleri (Tıklayarak Seçin):
+                          Hazır Kapak Görselleri:
                         </span>
                         <div className="mt-1.5 flex flex-wrap gap-1.5">
-                          {IMAGE_PRESETS.map((preset) => (
+                          {BLOG_IMAGE_PRESETS.map((preset) => (
                             <button
                               key={preset.url}
                               type="button"
@@ -981,11 +1449,11 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
                         rows={10}
                         value={postFormData.contentString}
                         onChange={(e) => setPostFormData({ ...postFormData, contentString: e.target.value })}
-                        placeholder="İlk paragrafı yazın...&#10;&#10;İkinci paragraf için araya bir satır boşluk bırakın (Enter tuşuna iki kez basın)...&#10;&#10;Üçüncü paragraf..."
+                        placeholder="İlk paragrafı yazın...&#10;&#10;İkinci paragraf için araya bir satır boşluk bırakın (Enter tuşuna iki kez basın)..."
                         className="mt-1 w-full rounded-xl border border-slate-200 px-3.5 py-2.5 font-sans text-sm leading-relaxed text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
                       />
                       <p className="mt-1 text-[11px] text-slate-400">
-                        💡 Her paragraf arasına boş bir satır (çift Enter) bırakın. Sistem otomatik olarak ayrı paragraflar şeklinde web sitenizde biçimlendirir.
+                        💡 Her paragraf arasına boş bir satır (çift Enter) bırakın. Otomatik olarak ayrı paragraflar halinde yayınlanacaktır.
                       </p>
                     </div>
 
@@ -1137,7 +1605,6 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
 
                         {/* Actions */}
                         <div className="flex items-center gap-1.5 self-end sm:self-center border-t border-slate-100 pt-2 sm:border-t-0 sm:pt-0">
-                          {/* Sıralama */}
                           <button
                             type="button"
                             disabled={originalIndex <= 0}
@@ -1161,7 +1628,6 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
                             </svg>
                           </button>
 
-                          {/* Düzenle */}
                           <button
                             type="button"
                             onClick={() => handleStartEditPost(originalIndex)}
@@ -1173,7 +1639,6 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
                             <span>Düzenle</span>
                           </button>
 
-                          {/* Sil */}
                           <button
                             type="button"
                             onClick={() => handleDeletePost(originalIndex)}
@@ -1190,6 +1655,604 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
                   })
                 )}
               </div>
+            </div>
+          )}
+
+          {/* TAB 6: Fotoğraf, Katalog & Ürün Görselleri Yönetimi */}
+          {activeTab === "media" && (
+            <div className="space-y-6">
+              {/* Media Sub-navigation Bar */}
+              <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white p-2.5 shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => setMediaSubTab("uploads")}
+                  className={`rounded-xl px-4 py-2 text-xs font-semibold transition ${
+                    mediaSubTab === "uploads"
+                      ? "bg-slate-900 text-white shadow"
+                      : "bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                  }`}
+                >
+                  📁 Yüklenen Fotoğraflar ({mediaFiles.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMediaSubTab("catalog");
+                    if (catalogFiles.length === 0) fetchCatalogFiles();
+                  }}
+                  className={`rounded-xl px-4 py-2 text-xs font-semibold transition ${
+                    mediaSubTab === "catalog"
+                      ? "bg-slate-900 text-white shadow"
+                      : "bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                  }`}
+                >
+                  🏷️ Katalog Görselleri Arşivi ({catalogFiles.length || 251})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMediaSubTab("products")}
+                  className={`rounded-xl px-4 py-2 text-xs font-semibold transition ${
+                    mediaSubTab === "products"
+                      ? "bg-slate-900 text-white shadow"
+                      : "bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                  }`}
+                >
+                  ❄️ Ürün Görseli Değiştirme ({catalogProducts.length} Ürün · {customProductCount} Özel Görsel)
+                </button>
+              </div>
+
+              {/* SUB-TAB 1: Yüklenen Fotoğraflar */}
+              {mediaSubTab === "uploads" && (
+                <div className="space-y-6">
+                  {/* Upload Zone */}
+                  <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+                    <div>
+                      <h2 className="text-base font-bold text-slate-900">Fotoğraf Yükleme & Özel Medyalar</h2>
+                      <p className="text-xs text-slate-500">
+                        Blog yazıları ve sayfalarda kullanmak üzere bilgisayarınızdan yeni fotoğraflar yükleyin.
+                      </p>
+                    </div>
+
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      className="group flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50/70 p-8 text-center transition hover:border-sky-500 hover:bg-sky-50/30 cursor-pointer"
+                    >
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={(e) => handleMediaFilesUpload(e.target.files)}
+                        className="hidden"
+                      />
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm border border-slate-200 group-hover:border-sky-300 transition">
+                        <svg className="h-6 w-6 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                      </div>
+                      <h3 className="mt-3 text-sm font-bold text-slate-900">
+                        {uploading ? "Fotoğraflar Yükleniyor..." : "Fotoğraf Seçin veya Buraya Sürükleyin"}
+                      </h3>
+                      <p className="mt-1 text-xs text-slate-500">
+                        JPG, PNG, WEBP, GIF veya SVG dosyaları (Maksimum 10MB)
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Media Search & Stats */}
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="relative max-w-sm flex-1">
+                      <input
+                        type="text"
+                        value={mediaSearchQuery}
+                        onChange={(e) => setMediaSearchQuery(e.target.value)}
+                        placeholder="Yüklenen dosyalarda ara..."
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 pl-9 text-xs text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                      />
+                      <svg className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={fetchMediaFiles}
+                        className="text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1"
+                      >
+                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        <span>Yenile</span>
+                      </button>
+                      <span className="text-xs font-medium text-slate-500">
+                        Toplam {filteredMedia.length} dosya yüklü
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Uploaded Photos Grid */}
+                  {mediaLoading ? (
+                    <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-xs text-slate-500">
+                      Fotoğraflar yükleniyor...
+                    </div>
+                  ) : filteredMedia.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center">
+                      <p className="text-sm font-medium text-slate-500">
+                        {mediaSearchQuery ? "Aramanıza uygun fotoğraf bulunamadı." : "Henüz fotoğraf yüklenmemiş."}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-sky-600 hover:underline"
+                      >
+                        + Bilgisayarınızdan ilk fotoğrafınızı yükleyin
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                      {filteredMedia.map((item) => (
+                        <div
+                          key={item.name}
+                          className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md"
+                        >
+                          <div className="relative aspect-[16/10] bg-slate-100 overflow-hidden border-b border-slate-100">
+                            <Image
+                              src={item.url}
+                              alt={item.name}
+                              fill
+                              className="object-cover transition duration-300 group-hover:scale-105"
+                              unoptimized
+                            />
+                          </div>
+
+                          <div className="flex flex-1 flex-col justify-between p-3.5 space-y-2.5">
+                            <div>
+                              <p className="text-xs font-bold text-slate-900 truncate" title={item.name}>
+                                {item.name}
+                              </p>
+                              <p className="text-[11px] text-slate-400">
+                                {formatBytes(item.size)} · {new Date(item.createdAt).toLocaleDateString("tr-TR")}
+                              </p>
+                            </div>
+
+                            <div className="flex items-center justify-between gap-1.5 pt-1 border-t border-slate-100">
+                              <button
+                                type="button"
+                                onClick={() => handleCopyLink(item.url)}
+                                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-200 transition"
+                              >
+                                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                </svg>
+                                <span>{copiedUrl === item.url ? "Kopyalandı!" : "Linki Kopyala"}</span>
+                              </button>
+
+                              <div className="flex items-center gap-1">
+                                <Link
+                                  href={item.url}
+                                  target="_blank"
+                                  className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+                                  title="Yeni Sekmede Aç"
+                                >
+                                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                  </svg>
+                                </Link>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteMedia(item.name)}
+                                  className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 transition"
+                                  title="Fotoğrafı Sil"
+                                >
+                                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* SUB-TAB 2: Katalog Görselleri Arşivi */}
+              {mediaSubTab === "catalog" && (
+                <div className="space-y-6">
+                  {/* Top Bar for Catalog */}
+                  <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <h2 className="text-base font-bold text-slate-900">Daikin Katalog Görselleri Arşivi</h2>
+                        <p className="text-xs text-slate-500">
+                          Sitede tanımlı tüm Daikin klimaların, dış ünitelerin ve kumandaların katalog görselleri.
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <input
+                          ref={catalogFileInputRef}
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          onChange={(e) => handleCatalogFilesUpload(e.target.files)}
+                          className="hidden"
+                        />
+                        <button
+                          type="button"
+                          disabled={uploading}
+                          onClick={() => catalogFileInputRef.current?.click()}
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-sky-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-sky-500 disabled:opacity-50 transition"
+                        >
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                          <span>{uploading ? "Yükleniyor..." : "Yeni Katalog Görseli Ekle"}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Search and Counts */}
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="relative max-w-sm flex-1">
+                      <input
+                        type="text"
+                        value={catalogSearchQuery}
+                        onChange={(e) => setCatalogSearchQuery(e.target.value)}
+                        placeholder="Model veya seri adına göre ara (örn: emura, ftxa, perfera, vrv)..."
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 pl-9 text-xs text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                      />
+                      <svg className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
+                    <span className="text-xs font-medium text-slate-500">
+                      Toplam {filteredCatalog.length} katalog görseli listeleniyor
+                    </span>
+                  </div>
+
+                  {/* Catalog Images Grid */}
+                  {catalogLoading ? (
+                    <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-xs text-slate-500">
+                      Katalog arşivi yükleniyor...
+                    </div>
+                  ) : filteredCatalog.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center">
+                      <p className="text-sm font-medium text-slate-500">
+                        {catalogSearchQuery ? "Aramanıza uygun katalog görseli bulunamadı." : "Katalog görseli bulunamadı."}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                      {filteredCatalog.map((item) => (
+                        <div
+                          key={item.name}
+                          className="group relative flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-[#121826] shadow-sm transition hover:shadow-md"
+                        >
+                          {/* Image Box */}
+                          <div className="relative aspect-[4/3] w-full overflow-hidden p-2">
+                            <Image
+                              src={item.url}
+                              alt={item.name}
+                              fill
+                              className="object-contain p-2 transition duration-300 group-hover:scale-105"
+                              unoptimized
+                            />
+                          </div>
+
+                          {/* Info Footer */}
+                          <div className="flex flex-col justify-between border-t border-slate-800 bg-[#0e131f] p-2.5 space-y-1.5">
+                            <p className="text-[11px] font-mono text-slate-200 truncate" title={item.name}>
+                              {item.name}
+                            </p>
+                            <p className="text-[10px] text-slate-500">
+                              {formatBytes(item.size)}
+                            </p>
+
+                            <div className="flex items-center justify-between pt-1 border-t border-slate-800">
+                              <button
+                                type="button"
+                                onClick={() => handleCopyLink(item.url)}
+                                className="text-[11px] font-semibold text-sky-400 hover:text-sky-300 hover:underline"
+                              >
+                                {copiedUrl === item.url ? "✓ Kopyalandı" : "URL Kopyala"}
+                              </button>
+
+                              <div className="flex items-center gap-1">
+                                <Link
+                                  href={item.url}
+                                  target="_blank"
+                                  className="rounded p-1 text-slate-400 hover:text-white transition"
+                                  title="Yeni Sekmede Aç"
+                                >
+                                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                  </svg>
+                                </Link>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteCatalogFile(item.name)}
+                                  className="rounded p-1 text-slate-500 hover:text-red-400 transition"
+                                  title="Görseli Sil"
+                                >
+                                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* SUB-TAB 3: Ürün Bazlı Görsel Değiştirme */}
+              {mediaSubTab === "products" && (
+                <div className="space-y-6">
+                  {/* Top Bar */}
+                  <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+                    <div>
+                      <h2 className="text-base font-bold text-slate-900">Daikin Cihazlarının Fotoğraflarını Değiştirme</h2>
+                      <p className="text-xs text-slate-500">
+                        Sitedeki herhangi bir Daikin ürününün görselini doğrudan değiştirebilir, yeni görsel yükleyebilir veya varsayılana döndürebilirsiniz.
+                      </p>
+                    </div>
+
+                    {/* Category Filter Pills */}
+                    <div className="flex flex-wrap gap-1.5 border-t border-slate-100 pt-3">
+                      {[
+                        { slug: "all", label: "Tüm Ürünler" },
+                        { slug: "bireysel-klimalar", label: "Bireysel Klimalar" },
+                        { slug: "multi-split", label: "Multi Split" },
+                        { slug: "ticari-klimalar", label: "Ticari Klimalar" },
+                        { slug: "vrv-sistemleri", label: "VRV Sistemleri" },
+                        { slug: "isi-pompalari", label: "Isı Pompaları" },
+                        { slug: "havalandirma", label: "Havalandırma" },
+                      ].map((cat) => (
+                        <button
+                          key={cat.slug}
+                          type="button"
+                          onClick={() => setProductCategoryFilter(cat.slug)}
+                          className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                            productCategoryFilter === cat.slug
+                              ? "bg-slate-900 text-white shadow-sm"
+                              : "bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200"
+                          }`}
+                        >
+                          {cat.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Search and Counts */}
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="relative max-w-sm flex-1">
+                      <input
+                        type="text"
+                        value={productSearchQuery}
+                        onChange={(e) => setProductSearchQuery(e.target.value)}
+                        placeholder="Model kodu veya seri ara (örn: FTXA, Sensira, Perfera, VRV)..."
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 pl-9 text-xs text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                      />
+                      <svg className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
+                    <span className="text-xs font-medium text-slate-500">
+                      {filteredProducts.length} ürün listeleniyor ({customProductCount} üründe özel görsel aktif)
+                    </span>
+                  </div>
+
+                  {/* Products Grid */}
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {filteredProducts.map((product) => {
+                      const hasOverride = Boolean(content.productImages?.[product.slug]);
+                      const currentImage = content.productImages?.[product.slug] || product.defaultImage;
+
+                      return (
+                        <div
+                          key={product.slug}
+                          className={`flex flex-col justify-between overflow-hidden rounded-2xl border bg-white p-4 shadow-sm transition hover:shadow-md ${
+                            hasOverride ? "border-emerald-300 ring-1 ring-emerald-300/40" : "border-slate-200"
+                          }`}
+                        >
+                          <div>
+                            {/* Product Image Header */}
+                            <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl bg-[#121826]">
+                              <Image
+                                src={currentImage}
+                                alt={product.name}
+                                fill
+                                className="object-contain p-3"
+                                unoptimized
+                              />
+                              {hasOverride && (
+                                <span className="absolute top-2 right-2 rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold text-white shadow">
+                                  ✓ Özel Görsel
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Info */}
+                            <div className="mt-3 space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="rounded bg-sky-50 px-2 py-0.5 text-[10px] font-bold text-sky-700">
+                                  {product.series}
+                                </span>
+                                {product.modelCode && (
+                                  <span className="text-[11px] font-mono font-semibold text-slate-500">
+                                    {product.modelCode}
+                                  </span>
+                                )}
+                              </div>
+                              <h4 className="text-xs font-bold text-slate-900 line-clamp-2" title={product.name}>
+                                {product.name}
+                              </h4>
+                            </div>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="mt-4 flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedProductToEdit(product)}
+                              className="inline-flex items-center gap-1.5 rounded-xl bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-sky-500 shadow-sm transition"
+                            >
+                              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                              </svg>
+                              <span>Görseli Değiştir</span>
+                            </button>
+
+                            {hasOverride && (
+                              <button
+                                type="button"
+                                onClick={() => handleResetProductImage(product.slug)}
+                                className="text-[11px] font-semibold text-slate-500 hover:text-red-600 transition"
+                              >
+                                Sıfırla
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* MODAL: Ürün Görseli Seçici / Yükleyici */}
+              {selectedProductToEdit && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+                  <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                      <div>
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-sky-600">
+                          {selectedProductToEdit.series} · {selectedProductToEdit.modelCode}
+                        </span>
+                        <h3 className="text-base font-bold text-slate-900">
+                          Ürün Görselini Değiştir
+                        </h3>
+                        <p className="text-xs text-slate-500 line-clamp-1">
+                          {selectedProductToEdit.name}
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setSelectedProductToEdit(null)}
+                        className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+                      >
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    <div className="mt-5 space-y-5">
+                      {/* 1. Bilgisayardan Yükle Butonu */}
+                      <div className="rounded-2xl border-2 border-dashed border-sky-200 bg-sky-50/50 p-5 text-center">
+                        <input
+                          ref={productCustomFileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleProductDirectFileUpload}
+                          className="hidden"
+                        />
+                        <button
+                          type="button"
+                          disabled={uploading}
+                          onClick={() => productCustomFileInputRef.current?.click()}
+                          className="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-5 py-2.5 text-xs font-semibold text-white shadow-md shadow-sky-600/20 hover:bg-sky-500 disabled:opacity-50 transition"
+                        >
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                          </svg>
+                          <span>{uploading ? "Yükleniyor..." : "Bilgisayardan Yeni Fotoğraf Yükle & Ata"}</span>
+                        </button>
+                        <p className="mt-1.5 text-[11px] text-slate-500">
+                          Yüklediğiniz fotoğraf anında bu ürüne atanır ve sitede yayına alınmaya hazır hale gelir.
+                        </p>
+                      </div>
+
+                      {/* 2. Katalog veya Yüklenen Fotoğraflardan Seç */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-bold text-slate-800">
+                            Veya Katalog / Medya Arşivinden Bir Görsel Seçin:
+                          </label>
+                          <input
+                            type="text"
+                            value={pickerSearchQuery}
+                            onChange={(e) => setPickerSearchQuery(e.target.value)}
+                            placeholder="Görsel ara..."
+                            className="w-48 rounded-lg border border-slate-200 px-2.5 py-1 text-xs focus:border-sky-500 focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="grid max-h-64 grid-cols-3 gap-2.5 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-3 sm:grid-cols-4">
+                          {catalogFiles
+                            .filter((f) => !pickerSearchQuery || f.name.toLowerCase().includes(pickerSearchQuery.toLowerCase()))
+                            .slice(0, 32)
+                            .map((file) => (
+                              <button
+                                key={file.url}
+                                type="button"
+                                onClick={() => handleSetProductImage(selectedProductToEdit.slug, file.url)}
+                                className="group relative flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-[#121826] p-1.5 text-left transition hover:border-sky-500 hover:ring-2 hover:ring-sky-500/20"
+                              >
+                                <div className="relative aspect-[4/3] w-full">
+                                  <Image
+                                    src={file.url}
+                                    alt={file.name}
+                                    fill
+                                    className="object-contain p-1"
+                                    unoptimized
+                                  />
+                                </div>
+                                <span className="mt-1 block text-[10px] text-slate-300 truncate font-mono">
+                                  {file.name}
+                                </span>
+                              </button>
+                            ))}
+                        </div>
+                      </div>
+
+                      {/* Manuel URL Girişi */}
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700">Veya Görsel URL / Yolu Girin:</label>
+                        <div className="mt-1 flex gap-2">
+                          <input
+                            type="text"
+                            defaultValue={content.productImages?.[selectedProductToEdit.slug] || selectedProductToEdit.defaultImage}
+                            id="manualProductImageUrl"
+                            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-mono text-slate-900 focus:border-sky-500 focus:outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const input = document.getElementById("manualProductImageUrl") as HTMLInputElement;
+                              if (input?.value) {
+                                handleSetProductImage(selectedProductToEdit.slug, input.value.trim());
+                              }
+                            }}
+                            className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition"
+                          >
+                            Ata
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

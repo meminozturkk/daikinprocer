@@ -13,8 +13,8 @@ import { faqJsonLd, localBusinessJsonLd } from "@/lib/seo";
 import { getWhatsAppUrl } from "@/lib/utils";
 
 export async function HomePage() {
-  const featured = getFeaturedProducts();
   const siteContent = await getSiteContent();
+  const featured = getFeaturedProducts(siteContent.productImages);
   const blogPosts = siteContent.posts && siteContent.posts.length > 0 ? siteContent.posts : posts;
 
   const whatsappHref = getWhatsAppUrl(siteContent.contact.whatsapp);
@@ -44,7 +44,7 @@ export async function HomePage() {
       <section className="relative overflow-hidden bg-[var(--navy)]">
         <div className="absolute inset-0">
           <Image
-            src="/sourced/hero/slide-1.jpg"
+            src={siteContent.hero.image || "/sourced/hero/slide-1.jpg"}
             alt="Daikin iklimlendirme sistemleri modern yaşam alanı"
             fill
             priority

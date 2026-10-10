@@ -9,6 +9,7 @@ import {
   getProductsByCategory,
   getSeriesForCategory,
 } from "@/content/products";
+import { getSiteContent } from "@/lib/site-content";
 import { createMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { contact } from "@/content/site";
 import { getWhatsAppUrl } from "@/lib/utils";
@@ -34,7 +35,8 @@ export default async function CategoryPage({ params }: Props) {
   const { category } = await params;
   const cat = getCategory(category);
   if (!cat) notFound();
-  const items = getProductsByCategory(cat.slug);
+  const siteContent = await getSiteContent();
+  const items = getProductsByCategory(cat.slug, siteContent.productImages);
   const seriesList = getSeriesForCategory(cat.slug);
 
   return (

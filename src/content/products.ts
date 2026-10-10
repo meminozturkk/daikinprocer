@@ -167,16 +167,25 @@ export function getCategory(slug: string) {
   return categories.find((c) => c.slug === slug);
 }
 
-export function getProductsByCategory(slug: string) {
-  return products.filter((p) => p.category === slug);
+export function getProductsByCategory(slug: string, overrides?: Record<string, string>) {
+  const list = products.filter((p) => p.category === slug);
+  if (!overrides || Object.keys(overrides).length === 0) return list;
+  return list.map((p) => (overrides[p.slug] ? { ...p, image: overrides[p.slug] } : p));
 }
 
-export function getProduct(slug: string) {
-  return products.find((p) => p.slug === slug);
+export function getProduct(slug: string, overrides?: Record<string, string>) {
+  const p = products.find((p) => p.slug === slug);
+  if (!p) return undefined;
+  if (overrides && overrides[p.slug]) {
+    return { ...p, image: overrides[p.slug] };
+  }
+  return p;
 }
 
-export function getFeaturedProducts() {
-  return products.filter((p) => p.featured);
+export function getFeaturedProducts(overrides?: Record<string, string>) {
+  const list = products.filter((p) => p.featured);
+  if (!overrides || Object.keys(overrides).length === 0) return list;
+  return list.map((p) => (overrides[p.slug] ? { ...p, image: overrides[p.slug] } : p));
 }
 
 export function getSeriesForCategory(slug: string) {

@@ -4,6 +4,7 @@ import { PageHero } from "@/components/ui/PageHero";
 import { Section } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { getCategory, getProduct, products } from "@/content/products";
+import { getSiteContent } from "@/lib/site-content";
 import { createMetadata, breadcrumbJsonLd, productJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { contact } from "@/content/site";
@@ -17,7 +18,8 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props) {
   const { product: slug } = await params;
-  const product = getProduct(slug);
+  const siteContent = await getSiteContent();
+  const product = getProduct(slug, siteContent.productImages);
   if (!product) return {};
   return createMetadata({
     title: product.name,
@@ -28,7 +30,8 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function ProductPage({ params }: Props) {
   const { category, product: slug } = await params;
-  const product = getProduct(slug);
+  const siteContent = await getSiteContent();
+  const product = getProduct(slug, siteContent.productImages);
   const cat = getCategory(category);
   if (!product || !cat || product.category !== category) notFound();
 

@@ -35,10 +35,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: result.error || "Kaydetme başarısız" }, { status: 500 });
     }
 
-    // Invalidate full page cache & blog pages
+    // Invalidate full page cache & pages
     revalidatePath("/", "layout");
     revalidatePath("/blog");
     revalidatePath("/blog/[slug]", "page");
+    revalidatePath("/urunler");
+    revalidatePath("/urunler/[category]", "page");
+    revalidatePath("/urunler/[category]/[product]", "page");
     revalidatePath("/sitemap.xml");
 
     return NextResponse.json({ ok: true, data: parsed.data });

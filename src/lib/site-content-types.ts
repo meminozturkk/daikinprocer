@@ -34,6 +34,7 @@ export const siteContentSchema = z.object({
     title: z.string().min(1),
     description: z.string().min(1),
     experienceYears: z.number().int().min(1).max(99),
+    image: z.string().optional(),
   }),
   announcement: z.object({
     enabled: z.boolean(),
@@ -48,6 +49,7 @@ export const siteContentSchema = z.object({
     }),
   ).length(4),
   posts: z.array(blogPostSchema).default(defaultBlogPosts),
+  productImages: z.record(z.string(), z.string()).default({}),
 });
 
 export type SiteContent = z.infer<typeof siteContentSchema>;
@@ -70,6 +72,7 @@ export const defaultSiteContent: SiteContent = {
     description:
       "Proser Grup; Daikin yetkili bayi ve yetkili servis olarak konut, ticari ve merkezi iklimlendirme projelerinde keşif, satış, montaj ve teknik servisi tek çatı altında sunar.",
     experienceYears: defaultSiteConfig.experienceYears,
+    image: "/sourced/hero/slide-1.jpg",
   },
   announcement: {
     enabled: false,
@@ -82,5 +85,6 @@ export const defaultSiteContent: SiteContent = {
     description: tp.description,
   })),
   posts: defaultBlogPosts,
+  productImages: {},
 };
 
