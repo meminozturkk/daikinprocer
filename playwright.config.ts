@@ -6,12 +6,12 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   use: {
-    baseURL: "http://127.0.0.1:3000",
+    baseURL: "http://127.0.0.1:3333",
     trace: "on-first-retry",
   },
   webServer: {
     command: "npm run start",
-    url: "http://127.0.0.1:3000",
+    url: "http://127.0.0.1:3333",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },
