@@ -4,6 +4,7 @@ import { Section } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { contact, siteConfig, trustPoints } from "@/content/site";
 import { createMetadata, breadcrumbJsonLd } from "@/lib/seo";
+import { getWhatsAppUrl } from "@/lib/utils";
 
 export const metadata = createMetadata({
   title: "Kurumsal | Daikin Yetkili Bayi ve Servis",
@@ -55,7 +56,12 @@ export default function KurumsalPage() {
               Bugün resmi konumumuz: <strong className="text-[var(--navy)]">{siteConfig.brandClaim}</strong>.
               Tüm marka ve ürün iletişimimiz onaylı Daikin kurumsal kimlik kurallarına uygundur.
             </p>
-            <Button href="/teklif-al">Projeniz için teklif alın</Button>
+            <Button
+              href={getWhatsAppUrl(contact.whatsapp.display, "Merhaba, projemiz için kurumsal iklimlendirme teklifi almak istiyorum.")}
+              external
+            >
+              WhatsApp ile Teklif Alın
+            </Button>
           </article>
           <div className="grid gap-4">
             {trustPoints.map((item) => (

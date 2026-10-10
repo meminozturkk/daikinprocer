@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/Button";
 import { getService, services } from "@/content/services";
 import { createMetadata, breadcrumbJsonLd, serviceJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { contact } from "@/content/site";
+import { getWhatsAppUrl } from "@/lib/utils";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -76,8 +78,18 @@ export default async function ServiceDetailPage({ params }: Props) {
               ))}
             </ul>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button href={slug === "yetkili-servis" || slug === "bakim" ? "/servis-talebi" : "/teklif-al"}>
-                {slug === "yetkili-servis" || slug === "bakim" ? "Servis talebi oluştur" : "Teklif al"}
+              <Button
+                href={getWhatsAppUrl(
+                  contact.whatsapp.display,
+                  `Merhaba, ${service.name} hizmetiniz hakkında bilgi ve talep oluşturmak istiyorum.`
+                )}
+                variant="whatsapp"
+                external
+              >
+                {slug === "yetkili-servis" || slug === "bakim" ? "WhatsApp ile Servis Talebi" : "WhatsApp ile Teklif Al"}
+              </Button>
+              <Button href={slug === "yetkili-servis" || slug === "bakim" ? "/servis-talebi" : "/teklif-al"} variant="ghost">
+                Online Form
               </Button>
               <Button href="/iletisim" variant="ghost">
                 İletişim

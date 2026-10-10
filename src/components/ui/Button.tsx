@@ -39,7 +39,7 @@ export function Button({
   external,
 }: ButtonProps) {
   const classes = cn(
-    "inline-flex items-center justify-center gap-2 rounded-full font-semibold transition focus-ring",
+    "inline-flex items-center justify-center gap-2 rounded-full font-semibold transition focus-ring whitespace-nowrap",
     variants[variant],
     sizes[size],
     className,

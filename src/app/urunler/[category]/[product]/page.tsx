@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/Button";
 import { getCategory, getProduct, products } from "@/content/products";
 import { createMetadata, breadcrumbJsonLd, productJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { contact } from "@/content/site";
+import { getWhatsAppUrl } from "@/lib/utils";
 
 type Props = { params: Promise<{ category: string; product: string }> };
 
@@ -103,11 +105,19 @@ export default async function ProductPage({ params }: Props) {
               Uygun alanlar: {product.suitableFor.join(", ")}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button href={`/teklif-al?urun=${encodeURIComponent(product.name)}`} size="lg">
-                Bu ürün için teklif al
+              <Button
+                href={getWhatsAppUrl(
+                  contact.whatsapp.display,
+                  `Merhaba, ${product.name} ürünü hakkında fiyat ve teklif bilgisi almak istiyorum.`
+                )}
+                variant="whatsapp"
+                size="lg"
+                external
+              >
+                WhatsApp ile Teklif Al
               </Button>
-              <Button href="/hizmetler/montaj" variant="ghost" size="lg">
-                Montaj hakkında
+              <Button href={`/teklif-al?urun=${encodeURIComponent(product.name)}`} variant="ghost" size="lg">
+                Teklif Formu
               </Button>
             </div>
             <p className="mt-4 text-xs text-[var(--slate)]">

@@ -5,6 +5,7 @@ import { faqs } from "@/content/blog";
 import { contact } from "@/content/site";
 import { createMetadata, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { getWhatsAppUrl } from "@/lib/utils";
 
 export const metadata = createMetadata({
   title: "Kartal Daikin Yetkili Bayi ve Servis",
@@ -42,8 +43,14 @@ export default function KartalPage() {
               Hizmet verdiğimiz yakın ilçeler: {contact.serviceArea.join(", ")}.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Button href="/teklif-al">Kartal keşif / teklif</Button>
-              <Button href="/servis-talebi" variant="secondary">
+              <Button href={getWhatsAppUrl(contact.whatsapp.display, "Merhaba, Kartal bölgesi için keşif ve teklif almak istiyorum.")} external>
+                Kartal keşif / teklif
+              </Button>
+              <Button
+                href={getWhatsAppUrl(contact.whatsapp.display, "Merhaba, Kartal bölgesi için Daikin yetkili servis talebinde bulunmak istiyorum.")}
+                variant="secondary"
+                external
+              >
                 Kartal servis talebi
               </Button>
             </div>

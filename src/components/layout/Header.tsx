@@ -5,24 +5,36 @@ import Link from "next/link";
 import { useState } from "react";
 import { navigation } from "@/content/site";
 import { contact } from "@/content/site";
+import { useSiteContent } from "@/lib/SiteContentContext";
 import { Button } from "@/components/ui/Button";
-import { cn } from "@/lib/utils";
+import { cn, getWhatsAppUrl } from "@/lib/utils";
 
 export function Header() {
   const [open, setOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const { contact: dynamicContact, hero } = useSiteContent();
+
+  const phoneHref = `tel:${dynamicContact.phoneLandline.replace(/[\s-]/g, "")}`;
+  const whatsappQuoteHref = getWhatsAppUrl(
+    dynamicContact.whatsapp,
+    "Merhaba, Daikin ürün ve sistemleri hakkında fiyat/keşif teklifi almak istiyorum."
+  );
+  const whatsappServiceHref = getWhatsAppUrl(
+    dynamicContact.whatsapp,
+    "Merhaba, Daikin cihazım için yetkili servis / bakım / arıza talebinde bulunmak istiyorum."
+  );
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/90 backdrop-blur-md">
       <div className="border-b border-slate-100 bg-[var(--navy)] text-white">
         <div className="container-pro flex flex-wrap items-center justify-between gap-2 py-2 text-xs md:text-sm">
-          <a href={contact.phones[0].href} className="focus-ring rounded hover:text-sky-200">
-            {contact.phones[0].display}
+          <a href={phoneHref} className="focus-ring rounded hover:text-sky-200">
+            {dynamicContact.phoneLandline}
           </a>
-          <a href={`mailto:${contact.email}`} className="focus-ring rounded hover:text-sky-200">
-            {contact.email}
+          <a href={`mailto:${dynamicContact.email}`} className="focus-ring rounded hover:text-sky-200">
+            {dynamicContact.email}
           </a>
-          <span className="hidden sm:inline">{siteConfigClaim()}</span>
+          <span className="hidden sm:inline">{hero.badge || siteConfigClaim()}</span>
         </div>
       </div>
 
@@ -74,11 +86,11 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-2 md:flex">
-          <Button href="/servis-talebi" variant="ghost" size="sm">
+        <div className="hidden shrink-0 items-center gap-2.5 md:flex">
+          <Button href={whatsappServiceHref} variant="ghost" size="sm" className="whitespace-nowrap" external>
             Servis Talebi
           </Button>
-          <Button href="/teklif-al" size="sm">
+          <Button href={whatsappQuoteHref} size="sm" className="whitespace-nowrap" external>
             Teklif Al
           </Button>
         </div>
@@ -127,10 +139,10 @@ export function Header() {
               </div>
             ))}
             <div className="mt-3 grid gap-2">
-              <Button href="/teklif-al" onClick={() => setOpen(false)}>
+              <Button href={whatsappQuoteHref} external onClick={() => setOpen(false)}>
                 Teklif Al
               </Button>
-              <Button href="/servis-talebi" variant="secondary" onClick={() => setOpen(false)}>
+              <Button href={whatsappServiceHref} variant="secondary" external onClick={() => setOpen(false)}>
                 Servis Talebi
               </Button>
             </div>

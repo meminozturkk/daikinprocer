@@ -1,0 +1,532 @@
+{
+  "schemaVersion": "ecc.install.v1",
+  "installedAt": "2026-10-10T10:27:36.337Z",
+  "target": {
+    "id": "cursor-project",
+    "target": "cursor",
+    "kind": "project",
+    "root": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor",
+    "installStatePath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/ecc-install-state.json"
+  },
+  "request": {
+    "profile": null,
+    "modules": [],
+    "includeComponents": [],
+    "excludeComponents": [],
+    "legacyLanguages": [
+      "typescript",
+      "web",
+      "react"
+    ],
+    "legacyMode": true,
+    "hookConsent": "declined"
+  },
+  "resolution": {
+    "selectedModules": [
+      "legacy-cursor-install"
+    ],
+    "skippedModules": []
+  },
+  "source": {
+    "repoVersion": "2.2.1",
+    "repoCommit": "5064474d4d762dc9640234a41617cccb79185cec",
+    "manifestVersion": 1
+  },
+  "operations": [
+    {
+      "kind": "copy-file",
+      "moduleId": "platform-configs",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/.cursor/rules/common-agents.md",
+      "sourceRelativePath": ".cursor/rules/common-agents.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/common-agents.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "fcaa4cbca9f286cc7224384689a7f4b0418e1803073061693d25331e3dfe8bde"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "platform-configs",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/.cursor/rules/common-coding-style.md",
+      "sourceRelativePath": ".cursor/rules/common-coding-style.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/common-coding-style.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "e98cdf580e9d926d9351daa40449a3aca1dd955c822252ac5ed9d4048706c79c"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "platform-configs",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/.cursor/rules/common-development-workflow.md",
+      "sourceRelativePath": ".cursor/rules/common-development-workflow.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/common-development-workflow.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "13446885e6578ca933ea62bf9dfabc22f2551694af0821098a5f46cc4f158d76"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "platform-configs",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/.cursor/rules/common-git-workflow.md",
+      "sourceRelativePath": ".cursor/rules/common-git-workflow.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/common-git-workflow.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "347557131fa0ed464ca90b8cf4881545fcefb45fc1b543df31659e74d87e8f7e"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "platform-configs",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/.cursor/rules/common-hooks.md",
+      "sourceRelativePath": ".cursor/rules/common-hooks.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/common-hooks.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "59fc54cbfdd3afeaf3aad3085337a3ba1f9cca4b6d3cb0d7327fdcb75e7ae804"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "platform-configs",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/.cursor/rules/common-patterns.md",
+      "sourceRelativePath": ".cursor/rules/common-patterns.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/common-patterns.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "ed73a02ca6fb3fa2e28bda6da8a16b46cd157150f5f3c580ecad5c748ad32b0a"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "platform-configs",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/.cursor/rules/common-performance.md",
+      "sourceRelativePath": ".cursor/rules/common-performance.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/common-performance.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "8037233bbe55509720345db61d5c3983d3888c9d8e2fe793f3c541b305e77a2e"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "platform-configs",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/.cursor/rules/common-security.md",
+      "sourceRelativePath": ".cursor/rules/common-security.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/common-security.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "ee71cbf4dc1d40adb9e9df9356542fe556f404ef84964c993739c9d79e1b9eb9"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "platform-configs",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/.cursor/rules/common-testing.md",
+      "sourceRelativePath": ".cursor/rules/common-testing.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/common-testing.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "11d43c4faded43edc2cb733000e107639aba6eac39ec23cf8e6bcef16a5a4bea"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "platform-configs",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/.cursor/rules/typescript-coding-style.md",
+      "sourceRelativePath": ".cursor/rules/typescript-coding-style.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/typescript-coding-style.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "44eab0454dfa2a97049d40d18b39a32f19fa5d84e05998e5fa0fef0be4e5ef78"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "platform-configs",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/.cursor/rules/typescript-hooks.md",
+      "sourceRelativePath": ".cursor/rules/typescript-hooks.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/typescript-hooks.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "0da4e6b630b8a8cf6c0c0804db3db7ac5ba90e67d729f26208ee4db81e7dc077"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "platform-configs",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/.cursor/rules/typescript-patterns.md",
+      "sourceRelativePath": ".cursor/rules/typescript-patterns.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/typescript-patterns.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "37a7008ef78c796b998f1e10f06727999517490db63cc3bda1d00963feb09eb5"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "platform-configs",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/.cursor/rules/typescript-security.md",
+      "sourceRelativePath": ".cursor/rules/typescript-security.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/typescript-security.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "d70261d33cd2a233c9f07284167b38557bddb9793d560b6b12b9fa876c01d8e7"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "platform-configs",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/.cursor/rules/typescript-testing.md",
+      "sourceRelativePath": ".cursor/rules/typescript-testing.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/typescript-testing.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "86410e4a5918cd5d6ac5822c368858d7857c9d38c54231c9803b2584c01dfd19"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "rules-core",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/rules/common/code-review.md",
+      "sourceRelativePath": "rules/common/code-review.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/common-code-review.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "275fcc2c05f51389cd0d050e704d45b1920210882eaab89d47f449bd3b2b6e98"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "rules-core",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/rules/react/coding-style.md",
+      "sourceRelativePath": "rules/react/coding-style.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/react-coding-style.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "f799684887ae82e5ebd615a59fb9aff6207328513d13052f00e97e11ac8bb008"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "rules-core",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/rules/react/hooks.md",
+      "sourceRelativePath": "rules/react/hooks.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/react-hooks.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "64154bbbc881d4b6660376581babae009351ef38f7602ca2d26a640ed253d774"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "rules-core",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/rules/react/patterns.md",
+      "sourceRelativePath": "rules/react/patterns.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/react-patterns.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "36071a93eb6f4be12718f912eae4c31eb68006134a53cc1d76101944d582c2ea"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "rules-core",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/rules/react/security.md",
+      "sourceRelativePath": "rules/react/security.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/react-security.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "52bf239b4b12409417e723e32ff7e1172c39c42d13fa9625eda75a45bd446cec"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "rules-core",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/rules/react/testing.md",
+      "sourceRelativePath": "rules/react/testing.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/react-testing.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "ae5d05b9e4f706f73f741c3591e880b873da49a7efd02253a381960245bf655f"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "rules-core",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/rules/web/coding-style.md",
+      "sourceRelativePath": "rules/web/coding-style.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/web-coding-style.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "a1ff88858d73c943ebd2145b7aff40b1adabbc3a083529eeae888acb7aa79863"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "rules-core",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/rules/web/design-quality.md",
+      "sourceRelativePath": "rules/web/design-quality.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/web-design-quality.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "ca0654b7fe31136031df8bb0a67e441949af6760ae6fda9656e4db7f171e512a"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "rules-core",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/rules/web/hooks.md",
+      "sourceRelativePath": "rules/web/hooks.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/web-hooks.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "fc6bc015d5c3206f357ac5f8e9ed781b17f518070c749a6b4294f7b6d1eaa2ed"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "rules-core",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/rules/web/patterns.md",
+      "sourceRelativePath": "rules/web/patterns.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/web-patterns.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "334fa10d5a31ebda261e0a6bcfe58310fced2cfd371fd18ce8955496e256c15a"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "rules-core",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/rules/web/performance.md",
+      "sourceRelativePath": "rules/web/performance.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/web-performance.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "73df4d1664cc5942eaf8d33bfe75a2c9de933e6cd6035fe2d42fec0635866297"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "rules-core",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/rules/web/security.md",
+      "sourceRelativePath": "rules/web/security.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/web-security.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "565851f9df7029baeb220cdc195bd89e5c81eb58ba3de74df9ab48f7c8ba5ff5"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "rules-core",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/rules/web/testing.md",
+      "sourceRelativePath": "rules/web/testing.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/rules/web-testing.mdc",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "1ce7194c30b5cd668d9e2ced138bd2c3807e6ad546c07f8f876522a77a2eae9a"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "agents-core",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/agents/code-reviewer.md",
+      "sourceRelativePath": "agents/code-reviewer.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/agents/ecc-code-reviewer.md",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "9dd23be23d65f18126e10f7680fc1eb2576ec54a427d076ff2f870bd0bafd5d2"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "agents-core",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/agents/planner.md",
+      "sourceRelativePath": "agents/planner.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/agents/ecc-planner.md",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "63aba865206bac9cb5887542fb01b97656e7701faff98e091aa77057ba9860bc"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "agents-core",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/agents/react-build-resolver.md",
+      "sourceRelativePath": "agents/react-build-resolver.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/agents/ecc-react-build-resolver.md",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "a29dec6de18ac3d7b65c746f8133c1f14de5886592fa340c5c2a62fe7c4584e0"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "agents-core",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/agents/react-reviewer.md",
+      "sourceRelativePath": "agents/react-reviewer.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/agents/ecc-react-reviewer.md",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "17d0286b4f101e27b818cad026a6bfc1f9fd3e7f9b52c8414e6ea2a05481995a"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "agents-core",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/agents/security-reviewer.md",
+      "sourceRelativePath": "agents/security-reviewer.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/agents/ecc-security-reviewer.md",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "813e4062bed5f42ab25dd02a0070f682058ffe9508198fcfdbb2c31296f93b7b"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "agents-core",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/agents/tdd-guide.md",
+      "sourceRelativePath": "agents/tdd-guide.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/agents/ecc-tdd-guide.md",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "979afbb40c42bfdd02fc308c130d7e257f5d6dd5f6531ef2562644862f6b7771"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "agents-core",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/agents/typescript-reviewer.md",
+      "sourceRelativePath": "agents/typescript-reviewer.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/agents/ecc-typescript-reviewer.md",
+      "strategy": "flatten-copy",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "6b012db1a9039870c4f040975144a0d4e3592510d6332e2d260f02859ec66da1"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "framework-language",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/skills/backend-patterns/SKILL.md",
+      "sourceRelativePath": "skills/backend-patterns/SKILL.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/skills/backend-patterns/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "9b983d0297a983110fdfda8dce55d19b750ca3e53ef155d75a3eff740d3874b8"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "framework-language",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/skills/coding-standards/SKILL.md",
+      "sourceRelativePath": "skills/coding-standards/SKILL.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/skills/coding-standards/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "e80544c3d1eac5b14f22022146bd91a6b0ecc30e099cf5181894853aeb81dee1"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "framework-language",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/skills/frontend-patterns/SKILL.md",
+      "sourceRelativePath": "skills/frontend-patterns/SKILL.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/skills/frontend-patterns/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "a5b971eb9e74cd763c7e3308bfd888e0d9cf69f8b88477659889d77182479740"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "framework-language",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/skills/react-patterns/SKILL.md",
+      "sourceRelativePath": "skills/react-patterns/SKILL.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/skills/react-patterns/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "d2dbf96a778229011f1971638d7719b032856f0f5d0da666f689569c849a045c"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "framework-language",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/skills/react-performance/SKILL.md",
+      "sourceRelativePath": "skills/react-performance/SKILL.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/skills/react-performance/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "c26bb2b7508bbfc4155ecae166504f17a73035f025c265648119ea341e0c2daf"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "framework-language",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/skills/react-testing/SKILL.md",
+      "sourceRelativePath": "skills/react-testing/SKILL.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/skills/react-testing/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "95a85895a00cf7d34a5f575d3e558a068db8c6b22a3f95fe3f980d1dede84d62"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "framework-language",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/skills/accessibility/SKILL.md",
+      "sourceRelativePath": "skills/accessibility/SKILL.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/skills/accessibility/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "d8578fe750e7321658450386e2112a46ea1aedca0235fbf97f3db2457e599b3a"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "workflow-quality",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/skills/tdd-workflow/SKILL.md",
+      "sourceRelativePath": "skills/tdd-workflow/SKILL.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/skills/tdd-workflow/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "e3a0051a99e82f7047b29a2a98c662d8ef8d0ede186acc085436fced7f2591b7"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "workflow-quality",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/skills/verification-loop/SKILL.md",
+      "sourceRelativePath": "skills/verification-loop/SKILL.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/skills/verification-loop/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "f0d56107f79e607d4de6c5543b8edfb1b58ab9ae4019b39831689cd91116543e"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "skill-deployment-patterns",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/skills/deployment-patterns/SKILL.md",
+      "sourceRelativePath": "skills/deployment-patterns/SKILL.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/skills/deployment-patterns/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "b864abd1954570c4a469b7e1deb897e57858d25db2fd98d035ff7bca4a15b9b6"
+    },
+    {
+      "kind": "copy-file",
+      "moduleId": "skill-docker-patterns",
+      "sourcePath": "/Users/muhammeteminozturk/.local/share/ecc/skills/docker-patterns/SKILL.md",
+      "sourceRelativePath": "skills/docker-patterns/SKILL.md",
+      "destinationPath": "/Users/muhammeteminozturk/Desktop/projects/daikinprocer/.cursor/skills/docker-patterns/SKILL.md",
+      "strategy": "preserve-relative-path",
+      "ownership": "managed",
+      "scaffoldOnly": false,
+      "contentSha256": "2a880cf2f6401874151daa9bcc0eacd10cf79f5f48b97f98e93a877a8f3fd12b"
+    }
+  ]
+}

@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/Button";
 import { getPost, posts } from "@/content/blog";
 import { createMetadata, breadcrumbJsonLd, articleJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { contact } from "@/content/site";
+import { getWhatsAppUrl } from "@/lib/utils";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -75,8 +77,12 @@ export default async function BlogPostPage({ params }: Props) {
           <div className="card-surface mt-10 bg-[var(--ice)] p-6">
             <p className="font-semibold text-[var(--navy)]">Projeniz için doğru ürünü seçelim</p>
             <p className="mt-2 text-sm">Ücretsiz keşif ve teklif için formu doldurun veya WhatsApp yazın.</p>
-            <Button href="/teklif-al" className="mt-4">
-              Teklif al
+            <Button
+              href={getWhatsAppUrl(contact.whatsapp.display, "Merhaba, rehber yazınız hakkında detaylı bilgi ve teklif almak istiyorum.")}
+              className="mt-4"
+              external
+            >
+              WhatsApp ile Teklif Al
             </Button>
           </div>
         </article>

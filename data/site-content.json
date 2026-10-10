@@ -1,0 +1,43 @@
+{
+  "contact": {
+    "brandName": "Proser Grup",
+    "tagline": "Daikin yetkili bayi ve teknik servis — Kartal / İstanbul",
+    "phoneLandline": "0 216 759 41 13",
+    "phoneMobile": "0 536 860 87 70",
+    "whatsapp": "0 536 860 87 70",
+    "email": "info@prosergrup.com",
+    "hours": "Pazartesi – Cumartesi 09:00 – 18:00",
+    "addressFull": "Gümüşpınar Mahallesi Elmaağacı Sokak No:6A-B Kartal / İstanbul",
+    "district": "Kartal"
+  },
+  "hero": {
+    "badge": "Daikin Yetkili Bayi ve Yetkili Servis",
+    "title": "Daikin konforu, mühendislik hassasiyetiyle Kartal’da.",
+    "description": "Proser Grup; Daikin yetkili bayi ve yetkili servis olarak konut, ticari ve merkezi iklimlendirme projelerinde keşif, satış, montaj ve teknik servisi tek çatı altında sunar.",
+    "experienceYears": 10
+  },
+  "announcement": {
+    "enabled": true,
+    "text": "Bahar Kampanyası: Ücretsiz keşif ve Daikin klimalarda montaj avantajı!",
+    "linkText": "Fırsatı İncele",
+    "linkHref": "/teklif-al"
+  },
+  "trustPoints": [
+    {
+      "title": "Daikin Yetkili Bayi",
+      "description": "Resmi Daikin ürün gamı, orijinal ekipman ve marka standartlarına uygun satış."
+    },
+    {
+      "title": "Daikin Yetkili Servis",
+      "description": "Montaj, bakım, arıza tespiti ve orijinal yedek parça ile satış sonrası destek."
+    },
+    {
+      "title": "10+ Yıl Sektör Deneyimi",
+      "description": "Kurumsal iklimlendirme projelerinde birikmiş mühendislik ve uygulama deneyimi."
+    },
+    {
+      "title": "Uçtan Uca Çözüm",
+      "description": "Keşiften projelendirmeye, montajdan periyodik bakıma tek noktadan hizmet."
+    }
+  ]
+}

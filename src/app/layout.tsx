@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
-import { Footer } from "@/components/layout/Footer";
-import { FloatingActions } from "@/components/layout/FloatingActions";
-import { Header } from "@/components/layout/Header";
 import { contact, siteConfig } from "@/content/site";
+import { getSiteContent } from "@/lib/site-content";
+import { SiteContentProvider } from "@/lib/SiteContentContext";
+import { SiteShell } from "@/components/layout/SiteShell";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -36,24 +36,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const content = await getSiteContent();
+
   return (
     <html lang="tr" className={`${manrope.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-white text-[var(--foreground)]">
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:shadow"
-        >
-          İçeriğe geç
-        </a>
-        <Header />
-        <main id="main" className="flex-1 pb-32 md:pb-28">
-          {children}
-        </main>
-        <Footer />
-        <FloatingActions />
+        <SiteContentProvider content={content}>
+          <SiteShell>{children}</SiteShell>
+        </SiteContentProvider>
       </body>
     </html>
   );

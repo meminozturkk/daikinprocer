@@ -1,9 +1,15 @@
+"use client";
+
 import Link from "next/link";
 import { categories } from "@/content/products";
 import { services } from "@/content/services";
 import { contact } from "@/content/site";
+import { useSiteContent } from "@/lib/SiteContentContext";
 
 export function Footer() {
+  const { contact: dynamicContact } = useSiteContent();
+  const phoneHref = `tel:${dynamicContact.phoneLandline.replace(/[\s-]/g, "")}`;
+
   return (
     <footer className="mt-auto border-t border-slate-100 bg-[var(--navy)] text-white">
       <div className="container-pro grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-4">
@@ -46,18 +52,18 @@ export function Footer() {
         <div>
           <p className="font-semibold">İletişim</p>
           <ul className="mt-3 space-y-2 text-sm text-slate-300">
-            <li>{contact.address.full}</li>
+            <li>{dynamicContact.addressFull}</li>
             <li>
-              <a href={contact.phones[0].href} className="hover:text-white">
-                {contact.phones[0].display}
+              <a href={phoneHref} className="hover:text-white">
+                {dynamicContact.phoneLandline}
               </a>
             </li>
             <li>
-              <a href={`mailto:${contact.email}`} className="hover:text-white">
-                {contact.email}
+              <a href={`mailto:${dynamicContact.email}`} className="hover:text-white">
+                {dynamicContact.email}
               </a>
             </li>
-            <li>{contact.hours}</li>
+            <li>{dynamicContact.hours}</li>
           </ul>
         </div>
       </div>

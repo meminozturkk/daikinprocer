@@ -10,6 +10,8 @@ import {
   getSeriesForCategory,
 } from "@/content/products";
 import { createMetadata, breadcrumbJsonLd } from "@/lib/seo";
+import { contact } from "@/content/site";
+import { getWhatsAppUrl } from "@/lib/utils";
 
 type Props = { params: Promise<{ category: string }> };
 
@@ -53,11 +55,25 @@ export default async function CategoryPage({ params }: Props) {
       />
       <Section>
         <div className="mb-8 flex flex-wrap gap-3">
-          <Button href={`/teklif-al?urun=${encodeURIComponent(cat.name)}`}>
-            Bu kategori için teklif
+          <Button
+            href={getWhatsAppUrl(
+              contact.whatsapp.display,
+              `Merhaba, ${cat.name} kategorisindeki Daikin ürünleri için teklif almak istiyorum.`
+            )}
+            variant="whatsapp"
+            external
+          >
+            WhatsApp ile Teklif Al
           </Button>
-          <Button href="/servis-talebi" variant="ghost">
-            Servis talebi
+          <Button href={`/teklif-al?urun=${encodeURIComponent(cat.name)}`} variant="ghost">
+            Teklif Formu
+          </Button>
+          <Button
+            href={getWhatsAppUrl(contact.whatsapp.display, `Merhaba, ${cat.name} ürünleri için yetkili servis talebinde bulunmak istiyorum.`)}
+            variant="ghost"
+            external
+          >
+            Servis Talebi
           </Button>
         </div>
         <ProductCatalogGrid products={items} seriesList={seriesList} />
