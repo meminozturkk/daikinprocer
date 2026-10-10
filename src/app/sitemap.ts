@@ -1,12 +1,13 @@
 import type { MetadataRoute } from "next";
-import { posts } from "@/content/blog";
+import { getBlogPosts } from "@/lib/site-content";
 import { categories, products } from "@/content/products";
 import { services } from "@/content/services";
 import { siteConfig } from "@/content/site";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteConfig.siteUrl;
   const now = new Date();
+  const posts = await getBlogPosts();
 
   const staticRoutes = [
     "",
@@ -51,7 +52,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const blogRoutes = posts.map((p) => ({
     url: `${base}/blog/${p.slug}`,
-    lastModified: new Date(p.date),
+    lastModified: p.date && !isNaN(Date.parse(p.date)) ? new Date(p.date) : now,
     changeFrequency: "monthly" as const,
     priority: 0.6,
   }));

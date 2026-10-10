@@ -38,3 +38,14 @@ export async function saveSiteContent(content: SiteContent): Promise<{ success: 
     return { success: false, error: errorMsg };
   }
 }
+
+export async function getBlogPosts() {
+  const content = await getSiteContent();
+  return content.posts;
+}
+
+export async function getBlogPostBySlug(slug: string) {
+  const posts = await getBlogPosts();
+  return posts.find((p) => p.slug === slug);
+}
+

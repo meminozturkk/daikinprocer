@@ -6,8 +6,51 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { SiteContent } from "@/lib/site-content-types";
 import { defaultSiteContent } from "@/lib/site-content-types";
+import type { BlogPost } from "@/lib/types";
 
-type TabKey = "contact" | "hero" | "announcement" | "trust";
+type TabKey = "contact" | "hero" | "announcement" | "trust" | "blog";
+
+type BlogPostForm = {
+  slug: string;
+  title: string;
+  excerpt: string;
+  date: string;
+  readingMinutes: number;
+  tagsString: string;
+  image: string;
+  contentString: string;
+};
+
+const IMAGE_PRESETS = [
+  { label: "Klima Seçimi", url: "/sourced/blog/klima-secimi.jpg" },
+  { label: "Duvar Tipi", url: "/sourced/products/duvar-tipi.jpg" },
+  { label: "Multi Split", url: "/sourced/products/multi.jpg" },
+  { label: "VRV Sistem", url: "/sourced/products/vrf.jpg" },
+  { label: "Isı Pompası", url: "/sourced/products/isi-pompasi.jpg" },
+  { label: "Teknik Servis", url: "/sourced/misc/service.jpg" },
+  { label: "Modern Konut", url: "/sourced/hero/slide-1.jpg" },
+];
+
+function slugify(text: string): string {
+  const trMap: Record<string, string> = {
+    ç: "c", Ç: "c",
+    ğ: "g", Ğ: "g",
+    ı: "i", İ: "i",
+    ö: "o", Ö: "o",
+    ş: "s", Ş: "s",
+    ü: "u", Ü: "u",
+  };
+  return text
+    .split("")
+    .map((char) => trMap[char] || char)
+    .join("")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
 
 export function AdminDashboard({ initialContent }: { initialContent: SiteContent }) {
   const router = useRouter();
@@ -16,6 +59,23 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
   const [saving, setSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
+  // Blog Editor State
+  const [editingPostIndex, setEditingPostIndex] = useState<number | null>(null); // null: closed, -1: new post, >=0: edit existing
+  const [postFormData, setPostFormData] = useState<BlogPostForm>({
+    slug: "",
+    title: "",
+    excerpt: "",
+    date: new Date().toISOString().split("T")[0],
+    readingMinutes: 5,
+    tagsString: "",
+    image: "/sourced/hero/slide-1.jpg",
+    contentString: "",
+  });
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
+  const [blogFormError, setBlogFormError] = useState<string | null>(null);
+  const [blogSearchQuery, setBlogSearchQuery] = useState("");
+  const [showPreview, setShowPreview] = useState(false);
+
   const handleLogout = async () => {
     await fetch("/api/admin/logout", { method: "POST" });
     router.push("/admin/login");
@@ -23,14 +83,15 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
   };
 
   const handleResetToDefault = () => {
-    if (confirm("Tüm alanları orijinal varsayılan değerlere sıfırlamak istediğinize emin misiniz?")) {
+    if (confirm("Tüm alanları ve blog yazılarını orijinal varsayılan değerlere sıfırlamak istediğinize emin misiniz?")) {
       setContent(defaultSiteContent);
+      setEditingPostIndex(null);
       setStatusMessage({ type: "success", text: "Varsayılan değerler yüklendi. Değişiklikleri yayına almak için 'Kaydet' butonuna basın." });
     }
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setSaving(true);
     setStatusMessage(null);
 
@@ -57,6 +118,168 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
       setSaving(false);
     }
   };
+
+  // Blog Handlers
+  const handleStartAddPost = () => {
+    setEditingPostIndex(-1);
+    setPostFormData({
+      slug: "",
+      title: "",
+      excerpt: "",
+      date: new Date().toISOString().split("T")[0],
+      readingMinutes: 5,
+      tagsString: "Daikin, Klima, Rehber",
+      image: "/sourced/blog/klima-secimi.jpg",
+      contentString: "",
+    });
+    setIsSlugManuallyEdited(false);
+    setBlogFormError(null);
+    setShowPreview(false);
+  };
+
+  const handleStartEditPost = (index: number) => {
+    const post = content.posts[index];
+    if (!post) return;
+    setEditingPostIndex(index);
+    setPostFormData({
+      slug: post.slug,
+      title: post.title,
+      excerpt: post.excerpt,
+      date: post.date,
+      readingMinutes: post.readingMinutes,
+      tagsString: post.tags.join(", "),
+      image: post.image || "/sourced/hero/slide-1.jpg",
+      contentString: post.content.join("\n\n"),
+    });
+    setIsSlugManuallyEdited(true);
+    setBlogFormError(null);
+    setShowPreview(false);
+  };
+
+  const handleTitleChange = (newTitle: string) => {
+    setPostFormData((prev) => ({
+      ...prev,
+      title: newTitle,
+      slug: isSlugManuallyEdited ? prev.slug : slugify(newTitle),
+    }));
+  };
+
+  const handleAutoSlug = () => {
+    setPostFormData((prev) => ({
+      ...prev,
+      slug: slugify(prev.title),
+    }));
+    setIsSlugManuallyEdited(false);
+  };
+
+  const handleSavePostForm = (e: React.FormEvent) => {
+    e.preventDefault();
+    setBlogFormError(null);
+
+    const cleanTitle = postFormData.title.trim();
+    const cleanSlug = slugify(postFormData.slug.trim());
+    const cleanExcerpt = postFormData.excerpt.trim();
+    const cleanDate = postFormData.date.trim() || new Date().toISOString().split("T")[0];
+    const readingMins = Math.max(1, Number(postFormData.readingMinutes) || 5);
+    const tags = postFormData.tagsString
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+    const paragraphs = postFormData.contentString
+      .split(/\n\s*\n/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+
+    if (!cleanTitle) {
+      setBlogFormError("Lütfen bir yazı başlığı girin.");
+      return;
+    }
+    if (!cleanSlug) {
+      setBlogFormError("Lütfen geçerli bir URL slug girin.");
+      return;
+    }
+    if (!cleanExcerpt) {
+      setBlogFormError("Lütfen kısa bir yazı özeti girin.");
+      return;
+    }
+    if (paragraphs.length === 0) {
+      setBlogFormError("Lütfen en az bir paragraf içerik girin.");
+      return;
+    }
+
+    // Slug conflict check
+    const isConflict = content.posts.some(
+      (p, idx) => idx !== editingPostIndex && p.slug === cleanSlug
+    );
+    if (isConflict) {
+      setBlogFormError(`"${cleanSlug}" adresi başka bir blog yazısında zaten kullanılıyor. Lütfen benzersiz bir URL slug belirleyin.`);
+      return;
+    }
+
+    const updatedPost: BlogPost = {
+      slug: cleanSlug,
+      title: cleanTitle,
+      excerpt: cleanExcerpt,
+      date: cleanDate,
+      readingMinutes: readingMins,
+      tags,
+      image: postFormData.image.trim() || undefined,
+      content: paragraphs,
+    };
+
+    let updatedPosts = [...(content.posts || [])];
+    if (editingPostIndex === -1) {
+      // New post added at the top
+      updatedPosts = [updatedPost, ...updatedPosts];
+    } else if (editingPostIndex !== null) {
+      updatedPosts[editingPostIndex] = updatedPost;
+    }
+
+    setContent({ ...content, posts: updatedPosts });
+    setEditingPostIndex(null);
+    setStatusMessage({
+      type: "success",
+      text: editingPostIndex === -1
+        ? `"${cleanTitle}" yazısı listeye eklendi. Sitede yayına almak için yukarıdaki "Değişiklikleri Kaydet" butonuna basınız.`
+        : `"${cleanTitle}" yazısı güncellendi. Sitede yayına almak için yukarıdaki "Değişiklikleri Kaydet" butonuna basınız.`,
+    });
+  };
+
+  const handleDeletePost = (index: number) => {
+    const post = content.posts[index];
+    if (!post) return;
+    if (confirm(`"${post.title}" başlıklı yazıyı silmek istediğinize emin misiniz?`)) {
+      const updated = content.posts.filter((_, i) => i !== index);
+      setContent({ ...content, posts: updated });
+      if (editingPostIndex === index) {
+        setEditingPostIndex(null);
+      }
+      setStatusMessage({
+        type: "success",
+        text: `"${post.title}" yazısı silindi. Yayına almak için "Değişiklikleri Kaydet" butonuna basınız.`,
+      });
+    }
+  };
+
+  const handleMovePost = (index: number, direction: "up" | "down") => {
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= content.posts.length) return;
+    const updated = [...content.posts];
+    const temp = updated[index];
+    updated[index] = updated[targetIndex];
+    updated[targetIndex] = temp;
+    setContent({ ...content, posts: updated });
+  };
+
+  const filteredPosts = (content.posts || []).filter((post) => {
+    if (!blogSearchQuery.trim()) return true;
+    const q = blogSearchQuery.toLowerCase();
+    return (
+      post.title.toLowerCase().includes(q) ||
+      post.slug.toLowerCase().includes(q) ||
+      post.tags.some((t) => t.toLowerCase().includes(q))
+    );
+  });
 
   return (
     <div className="min-h-screen bg-slate-100 pb-20">
@@ -104,9 +327,9 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
       <main className="mx-auto max-w-6xl px-4 pt-8 sm:px-6">
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">İçerik & Metin Yönetimi</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">İçerik & Blog Yönetimi</h1>
             <p className="mt-1 text-sm text-slate-500">
-              Telefon numaraları, açık adres, hero başlıkları ve duyuruları kolayca düzenleyin.
+              Telefon numaraları, duyuru bandı, ana sayfa metinleri ve blog yazılarını kolayca düzenleyin.
             </p>
           </div>
 
@@ -120,7 +343,7 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
             </button>
             <button
               type="button"
-              onClick={handleSave}
+              onClick={() => handleSave()}
               disabled={saving}
               className="inline-flex items-center justify-center rounded-xl bg-sky-600 px-5 py-2.5 text-xs font-semibold text-white shadow-md shadow-sky-600/20 hover:bg-sky-500 disabled:opacity-50 transition"
             >
@@ -149,6 +372,7 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
             { key: "hero", label: "🏠 Ana Sayfa Metinleri" },
             { key: "announcement", label: "📢 Duyuru Bandı" },
             { key: "trust", label: "🛡️ Güven Unsurları" },
+            { key: "blog", label: `📝 Blog Yönetimi (${content.posts?.length || 0})` },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -165,7 +389,7 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
         </div>
 
         {/* Tab Contents */}
-        <form onSubmit={handleSave} className="mt-6 space-y-6">
+        <div className="mt-6 space-y-6">
           {/* TAB 1: İletişim & Konum */}
           {activeTab === "contact" && (
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-5">
@@ -503,17 +727,484 @@ export function AdminDashboard({ initialContent }: { initialContent: SiteContent
             </div>
           )}
 
+          {/* TAB 5: Blog Yönetimi */}
+          {activeTab === "blog" && (
+            <div className="space-y-6">
+              {/* Top Controls */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h2 className="text-base font-bold text-slate-900">Blog & Rehber Yazıları</h2>
+                    <p className="text-xs text-slate-500">
+                      Sitedeki tüm blog içeriklerini düzenleyin, yeni makale ekleyin veya silin.
+                    </p>
+                  </div>
+                  {editingPostIndex === null && (
+                    <button
+                      type="button"
+                      onClick={handleStartAddPost}
+                      className="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-sky-500 transition"
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      <span>Yeni Blog Yazısı Ekle</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Blog Post Editor (Inline Form) */}
+              {editingPostIndex !== null && (
+                <div className="rounded-2xl border-2 border-sky-500 bg-white p-6 shadow-lg space-y-6">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <div className="flex items-center gap-2.5">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-100 text-sky-700 font-bold text-sm">
+                        {editingPostIndex === -1 ? "+" : "✏️"}
+                      </span>
+                      <div>
+                        <h3 className="text-base font-bold text-slate-900">
+                          {editingPostIndex === -1
+                            ? "Yeni Blog Yazısı Oluştur"
+                            : `Yazıyı Düzenle: ${postFormData.title || "İsimsiz Yazı"}`}
+                        </h3>
+                        <p className="text-xs text-slate-500">
+                          {editingPostIndex === -1
+                            ? "Gerekli alanları doldurarak yeni blog yazısını listeye ekleyin."
+                            : "Yazı detaylarını güncelleyip 'Yazıyı Güncelle' butonuna basın."}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setEditingPostIndex(null)}
+                      className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+                      title="Kapat"
+                    >
+                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {blogFormError && (
+                    <div className="rounded-xl border border-red-200 bg-red-50 p-3.5 text-xs font-semibold text-red-800">
+                      ⚠️ {blogFormError}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleSavePostForm} className="space-y-5">
+                    {/* Başlık & Slug */}
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="sm:col-span-2">
+                        <label className="block text-xs font-semibold text-slate-700">
+                          Yazı Başlığı <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={postFormData.title}
+                          onChange={(e) => handleTitleChange(e.target.value)}
+                          placeholder="Örn: Klima Seçerken Nelere Dikkat Etmeliyiz?"
+                          className="mt-1 w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-medium text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-2">
+                        <div className="flex items-center justify-between">
+                          <label className="block text-xs font-semibold text-slate-700">
+                            URL Adresi (Slug) <span className="text-red-500">*</span>
+                          </label>
+                          <button
+                            type="button"
+                            onClick={handleAutoSlug}
+                            className="text-[11px] font-medium text-sky-600 hover:underline"
+                          >
+                            Başlıktan Otomatik Oluştur
+                          </button>
+                        </div>
+                        <div className="mt-1 flex rounded-xl border border-slate-200 overflow-hidden focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-500/20">
+                          <span className="flex items-center bg-slate-50 px-3 text-xs font-mono text-slate-500 border-r border-slate-200 select-none">
+                            /blog/
+                          </span>
+                          <input
+                            type="text"
+                            value={postFormData.slug}
+                            onChange={(e) => {
+                              setPostFormData({ ...postFormData, slug: e.target.value });
+                              setIsSlugManuallyEdited(true);
+                            }}
+                            placeholder="klima-secerken-nelere-dikkat-etmeliyiz"
+                            className="w-full bg-white px-3.5 py-2.5 text-sm font-mono text-slate-900 focus:outline-none"
+                          />
+                        </div>
+                        <p className="mt-1 text-[11px] text-slate-400">
+                          Yalnızca küçük harf, rakam ve tire kullanın (örn: klima-secim-rehberi).
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Özet */}
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700">
+                        Kısa Özet (Excerpt) <span className="text-red-500">*</span>
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={postFormData.excerpt}
+                        onChange={(e) => setPostFormData({ ...postFormData, excerpt: e.target.value })}
+                        placeholder="Blog listesinde ve arama motorlarında görünen 1-2 cümlelik tanıtım özeti."
+                        className="mt-1 w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                      />
+                    </div>
+
+                    {/* Tarih, Okuma Süresi, Etiketler */}
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700">
+                          Yayın Tarihi <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="date"
+                          value={postFormData.date}
+                          onChange={(e) => setPostFormData({ ...postFormData, date: e.target.value })}
+                          className="mt-1 w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700">
+                          Okuma Süresi (Dakika) <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={60}
+                          value={postFormData.readingMinutes}
+                          onChange={(e) =>
+                            setPostFormData({
+                              ...postFormData,
+                              readingMinutes: Number(e.target.value) || 1,
+                            })
+                          }
+                          className="mt-1 w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700">
+                          Etiketler (Virgülle Ayrılmış)
+                        </label>
+                        <input
+                          type="text"
+                          value={postFormData.tagsString}
+                          onChange={(e) => setPostFormData({ ...postFormData, tagsString: e.target.value })}
+                          placeholder="klima seçimi, BTU, enerji"
+                          className="mt-1 w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Kapak Görseli Seçimi & Önizleme */}
+                    <div className="rounded-xl border border-slate-100 bg-slate-50/60 p-4 space-y-3">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex-1">
+                          <label className="block text-xs font-semibold text-slate-700">Kapak Görseli Yolu / URL</label>
+                          <input
+                            type="text"
+                            value={postFormData.image}
+                            onChange={(e) => setPostFormData({ ...postFormData, image: e.target.value })}
+                            placeholder="/sourced/blog/klima-secimi.jpg"
+                            className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                          />
+                        </div>
+                        {postFormData.image && (
+                          <div className="relative h-16 w-24 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100 shadow-sm">
+                            <Image
+                              src={postFormData.image}
+                              alt="Önizleme"
+                              fill
+                              className="object-cover"
+                              unoptimized
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                          Hazır Kapak Görselleri (Tıklayarak Seçin):
+                        </span>
+                        <div className="mt-1.5 flex flex-wrap gap-1.5">
+                          {IMAGE_PRESETS.map((preset) => (
+                            <button
+                              key={preset.url}
+                              type="button"
+                              onClick={() => setPostFormData({ ...postFormData, image: preset.url })}
+                              className={`rounded-lg px-2.5 py-1 text-xs font-medium transition ${
+                                postFormData.image === preset.url
+                                  ? "bg-sky-600 text-white shadow-sm"
+                                  : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+                              }`}
+                            >
+                              {preset.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* İçerik (Paragraflar) */}
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-semibold text-slate-700">
+                          Yazı İçeriği (Paragraflar) <span className="text-red-500">*</span>
+                        </label>
+                        <div className="flex items-center gap-3">
+                          <span className="text-[11px] text-slate-400">
+                            {
+                              postFormData.contentString
+                                .split(/\n\s*\n/)
+                                .filter((p) => p.trim().length > 0).length
+                            }{" "}
+                            paragraf algılandı
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setShowPreview(!showPreview)}
+                            className="text-xs font-semibold text-sky-600 hover:text-sky-700"
+                          >
+                            {showPreview ? "Önizlemeyi Gizle" : "Canlı Önizle"}
+                          </button>
+                        </div>
+                      </div>
+                      <textarea
+                        rows={10}
+                        value={postFormData.contentString}
+                        onChange={(e) => setPostFormData({ ...postFormData, contentString: e.target.value })}
+                        placeholder="İlk paragrafı yazın...&#10;&#10;İkinci paragraf için araya bir satır boşluk bırakın (Enter tuşuna iki kez basın)...&#10;&#10;Üçüncü paragraf..."
+                        className="mt-1 w-full rounded-xl border border-slate-200 px-3.5 py-2.5 font-sans text-sm leading-relaxed text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                      />
+                      <p className="mt-1 text-[11px] text-slate-400">
+                        💡 Her paragraf arasına boş bir satır (çift Enter) bırakın. Sistem otomatik olarak ayrı paragraflar şeklinde web sitenizde biçimlendirir.
+                      </p>
+                    </div>
+
+                    {/* Canlı Önizleme Kutusu */}
+                    {showPreview && (
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 space-y-4">
+                        <span className="inline-block rounded bg-sky-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-sky-800">
+                          Canlı Sayfa Önizlemesi
+                        </span>
+                        <h2 className="text-xl font-bold text-slate-900">{postFormData.title || "Yazı Başlığı"}</h2>
+                        <p className="text-xs text-slate-500">
+                          {postFormData.date} · {postFormData.readingMinutes} dk okuma
+                        </p>
+                        <div className="space-y-3 text-sm text-slate-700 leading-relaxed border-t border-slate-200 pt-4">
+                          {postFormData.contentString
+                            .split(/\n\s*\n/)
+                            .filter((p) => p.trim().length > 0)
+                            .map((p, idx) => (
+                              <p key={idx}>{p.trim()}</p>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Form Eylemleri */}
+                    <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
+                      <button
+                        type="button"
+                        onClick={() => setEditingPostIndex(null)}
+                        className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition"
+                      >
+                        Vazgeç
+                      </button>
+                      <button
+                        type="submit"
+                        className="rounded-xl bg-sky-600 px-5 py-2 text-xs font-semibold text-white shadow-md shadow-sky-600/20 hover:bg-sky-500 transition"
+                      >
+                        {editingPostIndex === -1 ? "Yazıyı Listeye Ekle" : "Yazıyı Güncelle"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* Arama & Filtreleme */}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="relative max-w-sm flex-1">
+                  <input
+                    type="text"
+                    value={blogSearchQuery}
+                    onChange={(e) => setBlogSearchQuery(e.target.value)}
+                    placeholder="Başlık veya etikete göre ara..."
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 pl-9 text-xs text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                  />
+                  <svg
+                    className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <span className="text-xs font-medium text-slate-500">
+                  Toplam {filteredPosts.length} blog yazısı listeleniyor
+                </span>
+              </div>
+
+              {/* Blog Yazıları Listesi */}
+              <div className="space-y-3">
+                {filteredPosts.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center">
+                    <p className="text-sm font-medium text-slate-500">
+                      {blogSearchQuery ? "Aramanıza uygun blog yazısı bulunamadı." : "Henüz blog yazısı eklenmemiş."}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleStartAddPost}
+                      className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-sky-600 hover:underline"
+                    >
+                      + İlk blog yazısını ekleyin
+                    </button>
+                  </div>
+                ) : (
+                  filteredPosts.map((post) => {
+                    const originalIndex = content.posts.findIndex((p) => p.slug === post.slug);
+                    return (
+                      <div
+                        key={post.slug}
+                        className="group flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-slate-300 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div className="flex items-start gap-4 flex-1 min-w-0">
+                          {/* Thumbnail */}
+                          <div className="relative h-20 w-28 shrink-0 overflow-hidden rounded-xl bg-slate-100 border border-slate-200">
+                            {post.image ? (
+                              <Image
+                                src={post.image}
+                                alt={post.title}
+                                fill
+                                className="object-cover"
+                                unoptimized
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">
+                                Görsel yok
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Info */}
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-[11px] font-semibold text-slate-500">
+                                {post.date} · {post.readingMinutes} dk okuma
+                              </span>
+                              <span className="text-slate-300">•</span>
+                              <Link
+                                href={`/blog/${post.slug}`}
+                                target="_blank"
+                                className="inline-flex items-center gap-1 text-[11px] font-mono text-sky-600 hover:underline"
+                              >
+                                <span>/blog/{post.slug}</span>
+                                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                </svg>
+                              </Link>
+                            </div>
+
+                            <h4 className="text-sm font-bold text-slate-900 truncate">
+                              {post.title}
+                            </h4>
+
+                            <p className="text-xs text-slate-500 line-clamp-1">
+                              {post.excerpt}
+                            </p>
+
+                            <div className="flex flex-wrap gap-1.5 pt-1">
+                              {post.tags.map((tag) => (
+                                <span
+                                  key={tag}
+                                  className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600"
+                                >
+                                  #{tag}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-1.5 self-end sm:self-center border-t border-slate-100 pt-2 sm:border-t-0 sm:pt-0">
+                          {/* Sıralama */}
+                          <button
+                            type="button"
+                            disabled={originalIndex <= 0}
+                            onClick={() => handleMovePost(originalIndex, "up")}
+                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-20 transition"
+                            title="Yukarı Taşı"
+                          >
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            disabled={originalIndex >= content.posts.length - 1}
+                            onClick={() => handleMovePost(originalIndex, "down")}
+                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-20 transition"
+                            title="Aşağı Taşı"
+                          >
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+
+                          {/* Düzenle */}
+                          <button
+                            type="button"
+                            onClick={() => handleStartEditPost(originalIndex)}
+                            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-200 transition"
+                          >
+                            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            <span>Düzenle</span>
+                          </button>
+
+                          {/* Sil */}
+                          <button
+                            type="button"
+                            onClick={() => handleDeletePost(originalIndex)}
+                            className="inline-flex items-center gap-1 rounded-lg border border-transparent px-2.5 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 transition"
+                          >
+                            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            <span>Sil</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Bottom Save bar */}
-          <div className="flex items-center justify-end gap-3 pt-4">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
             <button
-              type="submit"
+              type="button"
+              onClick={() => handleSave()}
               disabled={saving}
               className="inline-flex items-center justify-center rounded-xl bg-sky-600 px-6 py-3 text-sm font-semibold text-white shadow-md shadow-sky-600/25 hover:bg-sky-500 disabled:opacity-50 transition"
             >
               {saving ? "Kaydediliyor..." : "Değişiklikleri Kaydet"}
             </button>
           </div>
-        </form>
+        </div>
       </main>
     </div>
   );

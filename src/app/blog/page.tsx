@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { PageHero } from "@/components/ui/PageHero";
 import { Section } from "@/components/ui/Section";
-import { posts } from "@/content/blog";
+import { getBlogPosts } from "@/lib/site-content";
 import { createMetadata, breadcrumbJsonLd } from "@/lib/seo";
 
 export const metadata = createMetadata({
@@ -12,7 +12,11 @@ export const metadata = createMetadata({
   path: "/blog",
 });
 
-export default function BlogPage() {
+export const dynamic = "force-dynamic";
+
+export default async function BlogPage() {
+  const posts = await getBlogPosts();
+
   return (
     <>
       <PageHero

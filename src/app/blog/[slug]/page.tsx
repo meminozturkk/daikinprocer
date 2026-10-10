@@ -3,7 +3,7 @@ import Image from "next/image";
 import { PageHero } from "@/components/ui/PageHero";
 import { Section } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
-import { getPost, posts } from "@/content/blog";
+import { getBlogPostBySlug, getBlogPosts } from "@/lib/site-content";
 import { createMetadata, breadcrumbJsonLd, articleJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { contact } from "@/content/site";
@@ -11,13 +11,16 @@ import { getWhatsAppUrl } from "@/lib/utils";
 
 type Props = { params: Promise<{ slug: string }> };
 
+export const dynamicParams = true;
+
 export async function generateStaticParams() {
+  const posts = await getBlogPosts();
   return posts.map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
-  const post = getPost(slug);
+  const post = await getBlogPostBySlug(slug);
   if (!post) return {};
   return createMetadata({
     title: post.title,
@@ -28,7 +31,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
-  const post = getPost(slug);
+  const post = await getBlogPostBySlug(slug);
   if (!post) notFound();
   const path = `/blog/${post.slug}`;
 

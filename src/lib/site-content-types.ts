@@ -4,6 +4,18 @@ import {
   siteConfig as defaultSiteConfig,
   trustPoints as defaultTrustPoints,
 } from "@/content/site";
+import { posts as defaultBlogPosts } from "@/content/blog";
+
+export const blogPostSchema = z.object({
+  slug: z.string().min(1, "Slug gereklidir"),
+  title: z.string().min(1, "Başlık gereklidir"),
+  excerpt: z.string().min(1, "Özet gereklidir"),
+  date: z.string().min(1, "Tarih gereklidir"),
+  readingMinutes: z.number().int().min(1).default(5),
+  tags: z.array(z.string()).default([]),
+  image: z.string().optional(),
+  content: z.array(z.string()).min(1, "En az bir paragraf içerik olmalıdır"),
+});
 
 export const siteContentSchema = z.object({
   contact: z.object({
@@ -35,6 +47,7 @@ export const siteContentSchema = z.object({
       description: z.string().min(1),
     }),
   ).length(4),
+  posts: z.array(blogPostSchema).default(defaultBlogPosts),
 });
 
 export type SiteContent = z.infer<typeof siteContentSchema>;
@@ -68,4 +81,6 @@ export const defaultSiteContent: SiteContent = {
     title: tp.title,
     description: tp.description,
   })),
+  posts: defaultBlogPosts,
 };
+

@@ -15,6 +15,7 @@ import { getWhatsAppUrl } from "@/lib/utils";
 export async function HomePage() {
   const featured = getFeaturedProducts();
   const siteContent = await getSiteContent();
+  const blogPosts = siteContent.posts && siteContent.posts.length > 0 ? siteContent.posts : posts;
 
   const whatsappHref = getWhatsAppUrl(siteContent.contact.whatsapp);
   const whatsappQuoteHref = getWhatsAppUrl(
@@ -753,7 +754,7 @@ export async function HomePage() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
-          {posts.slice(0, 3).map((post) => (
+          {blogPosts.slice(0, 3).map((post) => (
             <Link key={post.slug} href={`/blog/${post.slug}`} className="bento-card block overflow-hidden group">
               {post.image ? (
                 <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
