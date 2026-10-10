@@ -44,3 +44,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# persistent dynamic data uploads
+/data/uploads/*
+!/data/uploads/catalog
+!/data/uploads/catalog/.gitkeep

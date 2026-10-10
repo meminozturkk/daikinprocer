@@ -33,9 +33,9 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function CategoryPage({ params }: Props) {
   const { category } = await params;
-  const cat = getCategory(category);
-  if (!cat) notFound();
   const siteContent = await getSiteContent();
+  const cat = getCategory(category, siteContent.categoryOverrides);
+  if (!cat) notFound();
   const items = getProductsByCategory(cat.slug, siteContent.productImages);
   const seriesList = getSeriesForCategory(cat.slug);
 

@@ -163,8 +163,28 @@ export const products: Product[] = [
   ...legacyProducts,
 ];
 
-export function getCategory(slug: string) {
-  return categories.find((c) => c.slug === slug);
+export function getCategories(
+  overrides?: Record<string, { name?: string; description?: string; image?: string; badge?: string }>
+): Category[] {
+  if (!overrides || Object.keys(overrides).length === 0) return categories;
+  return categories.map((c) => {
+    const o = overrides[c.slug];
+    if (!o) return c;
+    return {
+      ...c,
+      name: o.name?.trim() ? o.name.trim() : c.name,
+      description: o.description?.trim() ? o.description.trim() : c.description,
+      image: o.image?.trim() ? o.image.trim() : c.image,
+      badge: o.badge?.trim() ? o.badge.trim() : c.badge,
+    };
+  });
+}
+
+export function getCategory(
+  slug: string,
+  overrides?: Record<string, { name?: string; description?: string; image?: string; badge?: string }>
+) {
+  return getCategories(overrides).find((c) => c.slug === slug);
 }
 
 export function getProductsByCategory(slug: string, overrides?: Record<string, string>) {

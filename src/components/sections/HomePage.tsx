@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { categories, getFeaturedProducts } from "@/content/products";
+import { getCategories, getFeaturedProducts } from "@/content/products";
 import { services } from "@/content/services";
 import { faqs, posts, references } from "@/content/blog";
 import { contact, siteConfig } from "@/content/site";
@@ -14,6 +14,7 @@ import { getWhatsAppUrl } from "@/lib/utils";
 
 export async function HomePage() {
   const siteContent = await getSiteContent();
+  const cats = getCategories(siteContent.categoryOverrides);
   const featured = getFeaturedProducts(siteContent.productImages);
   const blogPosts = siteContent.posts && siteContent.posts.length > 0 ? siteContent.posts : posts;
 
@@ -29,10 +30,10 @@ export async function HomePage() {
   const phoneLandlineHref = `tel:${siteContent.contact.phoneLandline.replace(/[\s-]/g, "")}`;
 
   // Find key categories for Bento presentation
-  const residentialCat = categories.find((c) => c.slug === "bireysel-klimalar") || categories[0];
-  const vrvCat = categories.find((c) => c.slug === "vrv-sistemleri") || categories[3];
-  const althermaCat = categories.find((c) => c.slug === "isi-pompalari") || categories[4];
-  const secondaryCats = categories.filter(
+  const residentialCat = cats.find((c) => c.slug === "bireysel-klimalar") || cats[0];
+  const vrvCat = cats.find((c) => c.slug === "vrv-sistemleri") || cats[3];
+  const althermaCat = cats.find((c) => c.slug === "isi-pompalari") || cats[4];
+  const secondaryCats = cats.filter(
     (c) => c.slug !== "bireysel-klimalar" && c.slug !== "vrv-sistemleri" && c.slug !== "isi-pompalari"
   );
 
@@ -326,7 +327,7 @@ export async function HomePage() {
             <div className="p-7 sm:p-9">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <span className="tech-chip text-[var(--daikin-blue-dark)]">
-                  AMİRAL GEMİSİ SERİSİ
+                  {residentialCat.badge || "AMİRAL GEMİSİ SERİSİ"}
                 </span>
                 <span className="tech-chip-success font-bold">
                   A+++ Sezonsal Verim
@@ -340,7 +341,7 @@ export async function HomePage() {
               </h3>
 
               <p className="mt-3 text-base leading-relaxed text-[var(--slate)] max-w-xl">
-                {residentialCat.description} Sensira, Shira Plus, Perfera ve Stylish modelleriyle evinize ve ofisinize mükemmel uyum.
+                {residentialCat.description}
               </p>
 
               {/* Technical Badges */}
@@ -384,7 +385,7 @@ export async function HomePage() {
             {/* Card 2: VRV Systems */}
             <FadeIn delay={0.08} className="bento-card overflow-hidden group">
               <div className="p-6 sm:p-7">
-                <span className="tech-chip">MERKEZİ ÇÖZÜM</span>
+                <span className="tech-chip">{vrvCat.badge || "MERKEZİ ÇÖZÜM"}</span>
                 <h3 className="mt-3 text-xl font-bold text-[var(--navy)] group-hover:text-[var(--daikin-blue)] transition">
                   <Link href={`/urunler/${vrvCat.slug}`}>{vrvCat.name}</Link>
                 </h3>
@@ -417,7 +418,7 @@ export async function HomePage() {
             <FadeIn delay={0.12} className="bento-card overflow-hidden group">
               <div className="p-6 sm:p-7">
                 <span className="tech-chip text-emerald-700 bg-emerald-50 border-emerald-200">
-                  DÜŞÜK KARBON
+                  {althermaCat.badge || "DÜŞÜK KARBON"}
                 </span>
                 <h3 className="mt-3 text-xl font-bold text-[var(--navy)] group-hover:text-[var(--daikin-blue)] transition">
                   <Link href={`/urunler/${althermaCat.slug}`}>{althermaCat.name}</Link>

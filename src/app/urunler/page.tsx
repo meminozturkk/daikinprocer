@@ -2,7 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { PageHero } from "@/components/ui/PageHero";
 import { Section } from "@/components/ui/Section";
-import { categories } from "@/content/products";
+import { getCategories } from "@/content/products";
+import { getSiteContent } from "@/lib/site-content";
 import { createMetadata, breadcrumbJsonLd } from "@/lib/seo";
 
 export const metadata = createMetadata({
@@ -12,7 +13,10 @@ export const metadata = createMetadata({
   path: "/urunler",
 });
 
-export default function UrunlerPage() {
+export default async function UrunlerPage() {
+  const siteContent = await getSiteContent();
+  const cats = getCategories(siteContent.categoryOverrides);
+
   return (
     <>
       <PageHero
@@ -29,7 +33,7 @@ export default function UrunlerPage() {
       />
       <Section>
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {categories.map((cat) => (
+          {cats.map((cat) => (
             <Link key={cat.slug} href={`/urunler/${cat.slug}`} className="card-surface block overflow-hidden">
               <div className="relative aspect-[4/3] bg-[var(--ice)]">
                 <Image

@@ -15,12 +15,12 @@
     "title": "Daikin konforu, mühendislik hassasiyetiyle Kartal’da.",
     "description": "Proser Grup; Daikin yetkili bayi ve yetkili servis olarak konut, ticari ve merkezi iklimlendirme projelerinde keşif, satış, montaj ve teknik servisi tek çatı altında sunar.",
     "experienceYears": 10,
-    "image": "/sourced/hero/slide-2.jpg"
+    "image": "/sourced/hero/slide-1.jpg"
   },
   "announcement": {
-    "enabled": true,
-    "text": "Bahar Kampanyası: Ücretsiz keşif ve Daikin klimalarda montaj avantajı!",
-    "linkText": "Fırsatı İncele",
+    "enabled": false,
+    "text": "Daikin klimalarda indirimli keşif ve montaj fırsatları için hemen bize ulaşın!",
+    "linkText": "Teklif Al",
     "linkHref": "/teklif-al"
   },
   "trustPoints": [
@@ -147,5 +147,17 @@
         "Radyatör, yerden ısıtma veya fan coil gibi dağıtım sistemine uyum keşifte değerlendirilir. Proser Grup olarak sistem seçimini projenize göre yaparız."
       ]
     }
-  ]
+  ],
+  "productImages": {},
+  "categoryOverrides": {
+    "bireysel-klimalar": {
+      "image": "/sourced/catalog/991195.webp"
+    },
+    "vrv-sistemleri": {
+      "image": "/sourced/catalog/ftxa35bb-inverter-klima-r32-stylish-12000-btu-h-a.webp"
+    },
+    "isi-pompalari": {
+      "image": "/sourced/catalog/ftxj42ab-inverter-klima-r32emura-14000-btu-h-a.webp"
+    }
+  }
 }

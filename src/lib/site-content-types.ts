@@ -17,6 +17,15 @@ export const blogPostSchema = z.object({
   content: z.array(z.string()).min(1, "En az bir paragraf içerik olmalıdır"),
 });
 
+export const categoryOverrideSchema = z.object({
+  name: z.string().optional(),
+  description: z.string().optional(),
+  image: z.string().optional(),
+  badge: z.string().optional(),
+});
+
+export type CategoryOverride = z.infer<typeof categoryOverrideSchema>;
+
 export const siteContentSchema = z.object({
   contact: z.object({
     brandName: z.string().min(1),
@@ -50,6 +59,7 @@ export const siteContentSchema = z.object({
   ).length(4),
   posts: z.array(blogPostSchema).default(defaultBlogPosts),
   productImages: z.record(z.string(), z.string()).default({}),
+  categoryOverrides: z.record(z.string(), categoryOverrideSchema).default({}),
 });
 
 export type SiteContent = z.infer<typeof siteContentSchema>;
@@ -86,5 +96,6 @@ export const defaultSiteContent: SiteContent = {
   })),
   posts: defaultBlogPosts,
   productImages: {},
+  categoryOverrides: {},
 };
 

@@ -18,10 +18,14 @@ services:
       - path: .env
         required: false
     volumes:
-      - ./data:/app/data
+      - daikin_data:/app/data
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3333/ > /dev/null || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 20s
+
+volumes:
+  daikin_data:
+    name: daikin_data

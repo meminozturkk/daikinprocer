@@ -15,6 +15,16 @@ jobs:
   deploy:
     runs-on: self-hosted
     steps:
+      - name: Preserve existing server data before checkout
+        run: |
+          if [ -d "data" ]; then
+            echo "Backing up existing data directory before git checkout..."
+            mkdir -p /tmp/daikin_data_backup
+            cp -r data/* /tmp/daikin_data_backup/ 2>/dev/null || true
+            # Revert local changes on tracked files so actions/checkout doesn't conflict
+            git checkout -- data/site-content.json 2>/dev/null || true
+          fi
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -29,6 +39,34 @@ jobs:
           ADMIN_PASSWORD=${ADMIN_PASSWORD:-proser2026}
           ADMIN_SECRET=${ADMIN_SECRET:-daikinprocer-secure-secret-key-2026}
           EOF
+
+      - name: Initialize and protect persistent Docker volume
+        run: |
+          echo "Ensuring persistent Docker volume (daikin_data) exists..."
+          docker volume create daikin_data
+
+          # Check if volume already contains site-content.json
+          HAS_DATA=$(docker run --rm -v daikin_data:/vol node:20-alpine sh -c "[ -f /vol/site-content.json ] && echo 'yes' || echo 'no'")
+          echo "Does persistent volume already have site-content.json? => $HAS_DATA"
+
+          if [ "$HAS_DATA" = "no" ]; then
+            echo "Initializing persistent volume for the first time..."
+            if [ -f "/tmp/daikin_data_backup/site-content.json" ]; then
+              echo "Restoring from previous server data backup..."
+              docker run --rm -v daikin_data:/vol -v /tmp/daikin_data_backup:/src node:20-alpine sh -c "cp -r /src/* /vol/ && chown -R 1001:1001 /vol"
+            elif [ -d "data" ]; then
+              echo "Seeding with initial repository data..."
+              docker run --rm -v daikin_data:/vol -v "$(pwd)/data":/src node:20-alpine sh -c "cp -r /src/* /vol/ && chown -R 1001:1001 /vol"
+            fi
+          else
+            echo "Persistent volume already contains production data. Keeping live content intact!"
+          fi
+
+          # Ensure directories and permissions for nextjs user (1001:1001)
+          docker run --rm -v daikin_data:/vol node:20-alpine sh -c "mkdir -p /vol/uploads/catalog && chown -R 1001:1001 /vol"
+
+          # Clean temporary backup
+          rm -rf /tmp/daikin_data_backup
 
       - name: Build and Start Containers
         run: |

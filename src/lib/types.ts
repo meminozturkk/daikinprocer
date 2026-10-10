@@ -33,6 +33,7 @@ export type Category = {
   seoTitle: string;
   seoDescription: string;
   image: string;
+  badge?: string;
 };
 
 export type Service = {

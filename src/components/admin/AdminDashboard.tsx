@@ -5,10 +5,65 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { SiteContent } from "@/lib/site-content-types";
-import { defaultSiteContent } from "@/lib/site-content-types";
+import { defaultSiteContent, siteContentSchema } from "@/lib/site-content-types";
 import type { BlogPost } from "@/lib/types";
+import { categories as defaultCategories } from "@/content/products";
 
-type TabKey = "contact" | "hero" | "announcement" | "trust" | "blog" | "media";
+type TabKey = "contact" | "hero" | "categories" | "announcement" | "trust" | "blog" | "media";
+
+const CATEGORY_SHOWCASE_META: Record<
+  string,
+  {
+    badgeDefault: string;
+    badgeLabel: string;
+    locationLabel: string;
+    descriptionHint: string;
+    isPrimary: boolean;
+  }
+> = {
+  "bireysel-klimalar": {
+    badgeDefault: "AMİRAL GEMİSİ SERİSİ",
+    badgeLabel: "Üst Rozet (Varsayılan: AMİRAL GEMİSİ SERİSİ)",
+    locationLabel: "🏠 Ana Sayfa Amiral Gemisi (Büyük Vitrin Kartı - 2 Sütun)",
+    descriptionHint: "Ana sayfada Bireysel Klimalar kartının altında gösterilen tanıtım açıklaması.",
+    isPrimary: true,
+  },
+  "vrv-sistemleri": {
+    badgeDefault: "MERKEZİ ÇÖZÜM",
+    badgeLabel: "Üst Rozet (Varsayılan: MERKEZİ ÇÖZÜM)",
+    locationLabel: "🏢 Ana Sayfa Sağ Üst Vitrin Kartı (VRV Sistemleri)",
+    descriptionHint: "Ana sayfada VRV Merkezi Sistemler kartının altında gösterilen tanıtım açıklaması.",
+    isPrimary: true,
+  },
+  "isi-pompalari": {
+    badgeDefault: "DÜŞÜK KARBON",
+    badgeLabel: "Üst Rozet (Varsayılan: DÜŞÜK KARBON)",
+    locationLabel: "🌱 Ana Sayfa Sağ Alt Vitrin Kartı (Altherma Isı Pompaları)",
+    descriptionHint: "Ana sayfada Altherma Isı Pompaları kartının altında gösterilen tanıtım açıklaması.",
+    isPrimary: true,
+  },
+  "multi-split": {
+    badgeDefault: "ÇOKLU ODA",
+    badgeLabel: "Üst Rozet",
+    locationLabel: "🏠 Ana Sayfa Alt Şerit Kartı & /urunler",
+    descriptionHint: "Multi Split kartında ve ürünler sayfasında görünen açıklama.",
+    isPrimary: false,
+  },
+  "ticari-klimalar": {
+    badgeDefault: "SKY AIR",
+    badgeLabel: "Üst Rozet",
+    locationLabel: "🏬 Ana Sayfa Alt Şerit Kartı & /urunler",
+    descriptionHint: "Ticari Klimalar (Sky Air) kartında ve ürünler sayfasında görünen açıklama.",
+    isPrimary: false,
+  },
+  "havalandirma": {
+    badgeDefault: "İÇ ORTAM HAVA",
+    badgeLabel: "Üst Rozet",
+    locationLabel: "💨 Ana Sayfa Alt Şerit Kartı & /urunler",
+    descriptionHint: "Havalandırma & Hava Kalitesi kartında ve ürünler sayfasında görünen açıklama.",
+    isPrimary: false,
+  },
+};
 
 export type CatalogProductItem = {
   slug: string;
@@ -122,6 +177,18 @@ export function AdminDashboard({
   const blogFileInputRef = useRef<HTMLInputElement>(null);
   const heroFileInputRef = useRef<HTMLInputElement>(null);
   const productCustomFileInputRef = useRef<HTMLInputElement>(null);
+  const jsonImportInputRef = useRef<HTMLInputElement>(null);
+
+  // Category Showcase Overrides State & Refs
+  const [selectedCategoryToEditImage, setSelectedCategoryToEditImage] = useState<{
+    slug: string;
+    name: string;
+    currentImage: string;
+  } | null>(null);
+  const [directUploadCategorySlug, setDirectUploadCategorySlug] = useState<string | null>(null);
+  const [categoryPickerSearchQuery, setCategoryPickerSearchQuery] = useState("");
+  const categoryCardFileInputRef = useRef<HTMLInputElement>(null);
+  const categoryModalFileInputRef = useRef<HTMLInputElement>(null);
 
   // Blog Editor State
   const [editingPostIndex, setEditingPostIndex] = useState<number | null>(null);
@@ -188,6 +255,54 @@ export function AdminDashboard({
       setEditingPostIndex(null);
       setStatusMessage({ type: "success", text: "Varsayılan değerler yüklendi. Değişiklikleri yayına almak için 'Kaydet' butonuna basın." });
     }
+  };
+
+  const handleExportJson = () => {
+    try {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(content, null, 2));
+      const downloadAnchor = document.createElement("a");
+      const dateStr = new Date().toISOString().split("T")[0];
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `daikin-site-content-yedek-${dateStr}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      setStatusMessage({ type: "success", text: "Site içerik yedeği JSON olarak bilgisayarınıza indirildi." });
+      setTimeout(() => setStatusMessage(null), 4000);
+    } catch {
+      setStatusMessage({ type: "error", text: "Yedek dosyası indirilemedi." });
+    }
+  };
+
+  const handleImportJson = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const text = event.target?.result as string;
+        const parsed = JSON.parse(text);
+        const validation = siteContentSchema.safeParse(parsed);
+        if (!validation.success) {
+          throw new Error("Geçersiz yedek dosyası: JSON formatı veya alanlar şemayla uyuşmuyor.");
+        }
+        setContent(validation.data);
+        setStatusMessage({
+          type: "success",
+          text: "Yedek başarıyla yüklendi! Değişiklikleri sunucuya kaydetmek için lütfen 'Değişiklikleri Kaydet' butonuna basın.",
+        });
+        setTimeout(() => setStatusMessage(null), 6000);
+      } catch (err: unknown) {
+        setStatusMessage({
+          type: "error",
+          text: err instanceof Error ? err.message : "JSON dosyası okunamadı veya formatı geçersiz.",
+        });
+      } finally {
+        if (jsonImportInputRef.current) jsonImportInputRef.current.value = "";
+      }
+    };
+    reader.readAsText(file);
   };
 
   const handleSave = async (e?: React.FormEvent) => {
@@ -440,6 +555,124 @@ export function AdminDashboard({
     }
   };
 
+  // Category Showcase Overrides Handlers
+  const handleSetCategoryImage = (categorySlug: string, imageUrl: string) => {
+    setContent((prev) => ({
+      ...prev,
+      categoryOverrides: {
+        ...(prev.categoryOverrides || {}),
+        [categorySlug]: {
+          ...(prev.categoryOverrides?.[categorySlug] || {}),
+          image: imageUrl,
+        },
+      },
+    }));
+    setSelectedCategoryToEditImage(null);
+    setStatusMessage({
+      type: "success",
+      text: "Kategori görseli güncellendi! Yayına almak için 'Değişiklikleri Kaydet' butonuna basınız.",
+    });
+  };
+
+  const handleResetCategoryImageOnly = (categorySlug: string) => {
+    setContent((prev) => {
+      const current = { ...(prev.categoryOverrides?.[categorySlug] || {}) };
+      delete current.image;
+      return {
+        ...prev,
+        categoryOverrides: {
+          ...(prev.categoryOverrides || {}),
+          [categorySlug]: current,
+        },
+      };
+    });
+    setStatusMessage({
+      type: "success",
+      text: "Kategori görseli varsayılan orijinal görseline sıfırlandı. Yayına almak için 'Değişiklikleri Kaydet' butonuna basınız.",
+    });
+  };
+
+  const handleCategoryFieldChange = (
+    categorySlug: string,
+    field: "name" | "description" | "badge" | "image",
+    value: string
+  ) => {
+    setContent((prev) => ({
+      ...prev,
+      categoryOverrides: {
+        ...(prev.categoryOverrides || {}),
+        [categorySlug]: {
+          ...(prev.categoryOverrides?.[categorySlug] || {}),
+          [field]: value,
+        },
+      },
+    }));
+  };
+
+  const handleResetCategoryOverride = (categorySlug: string) => {
+    const updated = { ...(content.categoryOverrides || {}) };
+    delete updated[categorySlug];
+    setContent((prev) => ({
+      ...prev,
+      categoryOverrides: updated,
+    }));
+    setStatusMessage({
+      type: "success",
+      text: `"${categorySlug}" kategorisi varsayılan orijinal değerlerine sıfırlandı. Yayına almak için 'Değişiklikleri Kaydet' butonuna basınız.`,
+    });
+  };
+
+  const triggerCategoryCardUpload = (slug: string) => {
+    setDirectUploadCategorySlug(slug);
+    categoryCardFileInputRef.current?.click();
+  };
+
+  const handleCategoryCardDirectFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const targetSlug = directUploadCategorySlug;
+    if (!file || !targetSlug) return;
+
+    setUploading(true);
+    try {
+      const newUrl = await uploadSingleFile(file);
+      handleSetCategoryImage(targetSlug, newUrl);
+    } catch (err: unknown) {
+      setStatusMessage({
+        type: "error",
+        text: err instanceof Error ? err.message : "Fotoğraf yüklenemedi",
+      });
+    } finally {
+      setUploading(false);
+      setDirectUploadCategorySlug(null);
+      if (categoryCardFileInputRef.current) categoryCardFileInputRef.current.value = "";
+    }
+  };
+
+  const handleCategoryModalDirectFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedCategoryToEditImage) return;
+
+    setUploading(true);
+    try {
+      const newUrl = await uploadSingleFile(file);
+      handleSetCategoryImage(selectedCategoryToEditImage.slug, newUrl);
+    } catch (err: unknown) {
+      setStatusMessage({
+        type: "error",
+        text: err instanceof Error ? err.message : "Fotoğraf yüklenemedi",
+      });
+    } finally {
+      setUploading(false);
+      if (categoryModalFileInputRef.current) categoryModalFileInputRef.current.value = "";
+    }
+  };
+
+  const openCategoryPickerModal = (slug: string, name: string, currentImage: string) => {
+    if (catalogFiles.length === 0) fetchCatalogFiles();
+    if (mediaFiles.length === 0) fetchMediaFiles();
+    setSelectedCategoryToEditImage({ slug, name, currentImage });
+  };
+
   // Blog Handlers
   const handleStartAddPost = () => {
     setEditingPostIndex(-1);
@@ -675,11 +908,40 @@ export function AdminDashboard({
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <input
+              type="file"
+              ref={jsonImportInputRef}
+              onChange={handleImportJson}
+              accept=".json"
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={handleExportJson}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 hover:text-slate-900 transition"
+              title="Mevcut site içerik yedeğini bilgisayarınıza JSON dosyası olarak indirin"
+            >
+              <svg className="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              <span>Yedeği İndir</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => jsonImportInputRef.current?.click()}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 hover:text-slate-900 transition"
+              title="Bilgisayarınızdaki yedek JSON dosyasını panele yükleyin"
+            >
+              <svg className="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              <span>Yedek Yükle</span>
+            </button>
             <button
               type="button"
               onClick={handleResetToDefault}
-              className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition"
+              className="rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition"
             >
               Varsayılana Sıfırla
             </button>
@@ -712,6 +974,7 @@ export function AdminDashboard({
           {[
             { key: "contact", label: "📞 İletişim & Konum" },
             { key: "hero", label: "🏠 Ana Sayfa Metinleri" },
+            { key: "categories", label: "🗂️ Kategori Vitrinleri" },
             { key: "announcement", label: "📢 Duyuru Bandı" },
             { key: "trust", label: "🛡️ Güven Unsurları" },
             { key: "blog", label: `📝 Blog Yönetimi (${content.posts?.length || 0})` },
@@ -878,6 +1141,28 @@ export function AdminDashboard({
                 </p>
               </div>
 
+              {/* Quick Jump to Categories Banner */}
+              <div className="rounded-xl border border-sky-200 bg-sky-50/80 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">🗂️</span>
+                  <div>
+                    <h4 className="text-xs font-bold text-sky-950">
+                      Ana Sayfa Kategori Vitrin Kartları (Bireysel, VRV, Isı Pompası)
+                    </h4>
+                    <p className="text-[11px] text-sky-800">
+                      Ana sayfadaki vitrin kutularının fotoğraflarını ve başlık/açıklama yazılarını Kategori Vitrinleri sekmesinden güncelleyebilirsiniz.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("categories")}
+                  className="shrink-0 rounded-xl bg-sky-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-sky-500 shadow-sm transition"
+                >
+                  Vitrin Kartlarını Düzenle →
+                </button>
+              </div>
+
               {/* Hero Background Image Picker & Upload */}
               <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-5 space-y-4">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -1034,6 +1319,406 @@ export function AdminDashboard({
                     }
                     className="mt-1 w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
                   />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: Kategori Vitrinleri & Ürün Ailesi Kartları */}
+          {activeTab === "categories" && (
+            <div className="space-y-6">
+              {/* Header Box */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 rounded-md bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-700 mb-2">
+                      <span>🏠 Ana Sayfa & Ürün Sayfaları</span>
+                    </div>
+                    <h2 className="text-lg font-bold text-slate-900">
+                      Kategori Vitrinleri & Ürün Ailesi Kartları
+                    </h2>
+                    <p className="mt-1 text-xs text-slate-500 max-w-2xl">
+                      Ana sayfada yer alan <strong>Bireysel Klimalar</strong>, <strong>VRV Merkezi Sistemler</strong>, <strong>Altherma Isı Pompaları</strong> gibi vitrin kartlarının fotoğraflarını bilgisayarınızdan yükleyebilir veya arşivden seçebilir, başlık ve açıklamalarını kolayca güncelleyebilirsiniz.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href="/"
+                      target="_blank"
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition shadow-sm"
+                    >
+                      <span>Ana Sayfada Gör</span>
+                      <svg className="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </Link>
+                    <Link
+                      href="/urunler"
+                      target="_blank"
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition shadow-sm"
+                    >
+                      <span>Ürünler Sayfasında Gör</span>
+                      <svg className="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 1: Ana Sayfa Öne Çıkan Bento Vitrin Kartları */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-sky-100 text-xs font-bold text-sky-700">1</span>
+                  <h3 className="text-sm font-bold text-slate-900">
+                    Ana Sayfa Öne Çıkan Vitrin Kartları (Bento Grid)
+                  </h3>
+                  <span className="text-xs text-slate-400">
+                    — Ana sayfa üst bölümünde büyük olarak sergilenen 3 ana kategori
+                  </span>
+                </div>
+
+                <div className="space-y-5">
+                  {defaultCategories
+                    .filter((c) => CATEGORY_SHOWCASE_META[c.slug]?.isPrimary)
+                    .map((cat) => {
+                      const meta = CATEGORY_SHOWCASE_META[cat.slug] || {
+                        badgeDefault: "",
+                        badgeLabel: "Rozet",
+                        locationLabel: "",
+                        descriptionHint: "",
+                        isPrimary: false,
+                      };
+                      const override = content.categoryOverrides?.[cat.slug];
+                      const isCustom = Boolean(
+                        override?.name || override?.description || override?.image || override?.badge
+                      );
+                      const currentImage = override?.image || cat.image;
+                      const currentName = override?.name ?? cat.name;
+                      const currentDesc = override?.description ?? cat.description;
+                      const currentBadge = override?.badge ?? meta.badgeDefault;
+
+                      return (
+                        <div
+                          key={cat.slug}
+                          className={`rounded-2xl border bg-white p-5 sm:p-6 shadow-sm transition ${
+                            isCustom ? "border-sky-300 ring-1 ring-sky-300/30" : "border-slate-200"
+                          }`}
+                        >
+                          {/* Card Header */}
+                          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4 mb-5">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="rounded-lg bg-slate-900 px-2.5 py-1 text-[11px] font-bold text-white uppercase tracking-wider">
+                                {meta.locationLabel}
+                              </span>
+                              <Link
+                                href={`/urunler/${cat.slug}`}
+                                target="_blank"
+                                className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 hover:text-sky-700 hover:underline"
+                              >
+                                <span>/urunler/{cat.slug}</span>
+                                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                </svg>
+                              </Link>
+                              {isCustom && (
+                                <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
+                                  ✓ Özel Ayarlar Aktif
+                                </span>
+                              )}
+                            </div>
+
+                            {isCustom && (
+                              <button
+                                type="button"
+                                onClick={() => handleResetCategoryOverride(cat.slug)}
+                                className="text-xs font-medium text-slate-500 hover:text-red-600 transition underline underline-offset-2"
+                              >
+                                Varsayılana Sıfırla
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Card Body */}
+                          <div className="grid gap-6 lg:grid-cols-12">
+                            {/* Left: Image Preview & Management (5 Cols) */}
+                            <div className="lg:col-span-5 space-y-3">
+                              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                                Vitrin Fotoğrafı
+                              </label>
+
+                              <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-100 group shadow-inner">
+                                <Image
+                                  src={currentImage}
+                                  alt={currentName}
+                                  fill
+                                  className="object-cover"
+                                  unoptimized
+                                />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => triggerCategoryCardUpload(cat.slug)}
+                                    className="rounded-lg bg-white/90 px-3 py-1.5 text-xs font-bold text-slate-900 shadow hover:bg-white"
+                                  >
+                                    Yükle
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      openCategoryPickerModal(cat.slug, cat.name, currentImage)
+                                    }
+                                    className="rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-bold text-white shadow hover:bg-sky-500"
+                                  >
+                                    Arşivden Seç
+                                  </button>
+                                </div>
+                              </div>
+
+                              <div className="flex flex-wrap gap-2">
+                                <button
+                                  type="button"
+                                  disabled={uploading}
+                                  onClick={() => triggerCategoryCardUpload(cat.slug)}
+                                  className="inline-flex items-center gap-1.5 rounded-xl bg-sky-600 px-3 py-2 text-xs font-semibold text-white shadow-sm shadow-sky-600/20 hover:bg-sky-500 disabled:opacity-50 transition"
+                                >
+                                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                  </svg>
+                                  <span>{uploading && directUploadCategorySlug === cat.slug ? "Yükleniyor..." : "Fotoğraf Yükle"}</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    openCategoryPickerModal(cat.slug, cat.name, currentImage)
+                                  }
+                                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition"
+                                >
+                                  <svg className="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                  </svg>
+                                  <span>Katalog / Arşivden Seç</span>
+                                </button>
+
+                                {override?.image && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleResetCategoryImageOnly(cat.slug)}
+                                    className="rounded-xl border border-slate-200 px-2.5 py-2 text-xs font-medium text-slate-500 hover:text-slate-800 transition"
+                                    title="Varsayılan orijinal fotoğrafa dön"
+                                  >
+                                    Orijinal Görsel
+                                  </button>
+                                )}
+                              </div>
+
+                              <div>
+                                <label className="block text-[11px] font-medium text-slate-500 mb-1">
+                                  Görsel URL / Dosya Yolu:
+                                </label>
+                                <input
+                                  type="text"
+                                  value={override?.image ?? ""}
+                                  placeholder={cat.image}
+                                  onChange={(e) =>
+                                    handleCategoryFieldChange(cat.slug, "image", e.target.value.trim())
+                                  }
+                                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-mono text-slate-800 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Right: Text Fields (7 Cols) */}
+                            <div className="lg:col-span-7 space-y-4">
+                              {/* Title */}
+                              <div>
+                                <div className="flex items-center justify-between">
+                                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                                    Kategori Başlığı
+                                  </label>
+                                  <span className="text-[11px] text-slate-400">Ana başlık</span>
+                                </div>
+                                <input
+                                  type="text"
+                                  value={currentName}
+                                  onChange={(e) =>
+                                    handleCategoryFieldChange(cat.slug, "name", e.target.value)
+                                  }
+                                  placeholder={cat.name}
+                                  className="mt-1 w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                                />
+                              </div>
+
+                              {/* Description */}
+                              <div>
+                                <div className="flex items-center justify-between">
+                                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                                    Açıklama Metni
+                                  </label>
+                                  <span className="text-[11px] text-slate-400">Vitrin kartı alt metni</span>
+                                </div>
+                                <textarea
+                                  rows={3}
+                                  value={currentDesc}
+                                  onChange={(e) =>
+                                    handleCategoryFieldChange(cat.slug, "description", e.target.value)
+                                  }
+                                  placeholder={cat.description}
+                                  className="mt-1 w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs leading-relaxed text-slate-800 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                                />
+                                <p className="mt-1 text-[11px] text-slate-400">
+                                  {meta.descriptionHint}
+                                </p>
+                              </div>
+
+                              {/* Badge */}
+                              <div>
+                                <div className="flex items-center justify-between">
+                                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                                    Rozet / Vurgu Etiketi
+                                  </label>
+                                  <span className="text-[11px] text-slate-400">Kartın üst rozeti</span>
+                                </div>
+                                <input
+                                  type="text"
+                                  value={currentBadge}
+                                  onChange={(e) =>
+                                    handleCategoryFieldChange(cat.slug, "badge", e.target.value)
+                                  }
+                                  placeholder={meta.badgeDefault}
+                                  className="mt-1 w-full rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+
+              {/* SECTION 2: Diğer Kategori Kartları */}
+              <div className="pt-4 border-t border-slate-200">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-700">2</span>
+                  <h3 className="text-sm font-bold text-slate-900">
+                    Diğer Kategori Kartları (Ana Sayfa Alt Şerit & Ürünler Sayfası)
+                  </h3>
+                  <span className="text-xs text-slate-400">
+                    — Multi Split, Ticari (Sky Air) ve Havalandırma
+                  </span>
+                </div>
+
+                <div className="grid gap-5 md:grid-cols-3">
+                  {defaultCategories
+                    .filter((c) => !CATEGORY_SHOWCASE_META[c.slug]?.isPrimary)
+                    .map((cat) => {
+                      const override = content.categoryOverrides?.[cat.slug];
+                      const isCustom = Boolean(
+                        override?.name || override?.description || override?.image || override?.badge
+                      );
+                      const currentImage = override?.image || cat.image;
+                      const currentName = override?.name ?? cat.name;
+                      const currentDesc = override?.description ?? cat.description;
+
+                      return (
+                        <div
+                          key={cat.slug}
+                          className={`rounded-2xl border bg-white p-5 shadow-sm transition flex flex-col justify-between ${
+                            isCustom ? "border-sky-300 ring-1 ring-sky-300/30" : "border-slate-200"
+                          }`}
+                        >
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-bold uppercase text-slate-500">
+                                {cat.shortName}
+                              </span>
+                              {isCustom && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleResetCategoryOverride(cat.slug)}
+                                  className="text-[11px] text-slate-400 hover:text-red-600 transition"
+                                >
+                                  Sıfırla
+                                </button>
+                              )}
+                            </div>
+
+                            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-100 group shadow-inner">
+                              <Image
+                                src={currentImage}
+                                alt={currentName}
+                                fill
+                                className="object-cover"
+                                unoptimized
+                              />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => triggerCategoryCardUpload(cat.slug)}
+                                  className="rounded-lg bg-white/90 px-2.5 py-1 text-[11px] font-bold text-slate-900 shadow hover:bg-white"
+                                >
+                                  Yükle
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    openCategoryPickerModal(cat.slug, cat.name, currentImage)
+                                  }
+                                  className="rounded-lg bg-sky-600 px-2.5 py-1 text-[11px] font-bold text-white shadow hover:bg-sky-500"
+                                >
+                                  Seç
+                                </button>
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-[11px] font-bold text-slate-700">Başlık</label>
+                              <input
+                                type="text"
+                                value={currentName}
+                                onChange={(e) =>
+                                  handleCategoryFieldChange(cat.slug, "name", e.target.value)
+                                }
+                                placeholder={cat.name}
+                                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-900 focus:border-sky-500 focus:outline-none"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[11px] font-bold text-slate-700">Açıklama</label>
+                              <textarea
+                                rows={2}
+                                value={currentDesc}
+                                onChange={(e) =>
+                                  handleCategoryFieldChange(cat.slug, "description", e.target.value)
+                                }
+                                placeholder={cat.description}
+                                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-800 focus:border-sky-500 focus:outline-none"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                            <Link
+                              href={`/urunler/${cat.slug}`}
+                              target="_blank"
+                              className="text-sky-600 font-semibold hover:underline"
+                            >
+                              Sayfayı İncele →
+                            </Link>
+                            <button
+                              type="button"
+                              onClick={() => triggerCategoryCardUpload(cat.slug)}
+                              className="text-slate-600 font-medium hover:text-sky-600"
+                            >
+                              Fotoğraf Değiştir
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
             </div>
@@ -1699,6 +2384,13 @@ export function AdminDashboard({
                 >
                   ❄️ Ürün Görseli Değiştirme ({catalogProducts.length} Ürün · {customProductCount} Özel Görsel)
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("categories")}
+                  className="rounded-xl px-4 py-2 text-xs font-semibold bg-sky-50 text-sky-700 hover:bg-sky-100 transition border border-sky-200"
+                >
+                  🗂️ Kategori Vitrinleri (Bireysel, VRV vb.) →
+                </button>
               </div>
 
               {/* SUB-TAB 1: Yüklenen Fotoğraflar */}
@@ -2253,6 +2945,164 @@ export function AdminDashboard({
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Hidden file inputs for category upload - Root Level */}
+          <input
+            ref={categoryCardFileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleCategoryCardDirectFile}
+            className="hidden"
+          />
+          <input
+            ref={categoryModalFileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleCategoryModalDirectFile}
+            className="hidden"
+          />
+
+          {/* MODAL: Kategori Görseli Seçici / Yükleyici - Root Level */}
+          {selectedCategoryToEditImage && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+              <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-sky-600">
+                      Kategori Vitrini Görseli
+                    </span>
+                    <h3 className="text-base font-bold text-slate-900">
+                      {selectedCategoryToEditImage.name} Görselini Değiştir
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Ana sayfada ve ürün sayfalarında kullanılacak görseli seçin veya bilgisayarınızdan yükleyin.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCategoryToEditImage(null)}
+                    className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+                  >
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="mt-5 space-y-5">
+                  {/* 1. Bilgisayardan Yükle Butonu */}
+                  <div className="rounded-2xl border-2 border-dashed border-sky-200 bg-sky-50/50 p-5 text-center">
+                    <button
+                      type="button"
+                      disabled={uploading}
+                      onClick={() => categoryModalFileInputRef.current?.click()}
+                      className="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-5 py-2.5 text-xs font-semibold text-white shadow-md shadow-sky-600/20 hover:bg-sky-500 disabled:opacity-50 transition"
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                      </svg>
+                      <span>{uploading ? "Yükleniyor..." : "Bilgisayardan Yeni Fotoğraf Yükle & Ata"}</span>
+                    </button>
+                    <p className="mt-1.5 text-[11px] text-slate-500">
+                      Yüklediğiniz fotoğraf doğrudan bu kategoriye atanır ve sitede yayına alınmaya hazır olur.
+                    </p>
+                  </div>
+
+                  {/* 2. Katalog veya Yüklenen Fotoğraflardan Seç */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-slate-800">
+                        Veya Katalog / Medya Arşivinden Bir Görsel Seçin:
+                      </label>
+                      <input
+                        type="text"
+                        value={categoryPickerSearchQuery}
+                        onChange={(e) => setCategoryPickerSearchQuery(e.target.value)}
+                        placeholder="Görsel ara..."
+                        className="w-48 rounded-lg border border-slate-200 px-2.5 py-1 text-xs focus:border-sky-500 focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="grid max-h-64 grid-cols-3 gap-2.5 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-3 sm:grid-cols-4">
+                      {catalogLoading || mediaLoading ? (
+                        <div className="col-span-full py-8 text-center text-xs text-slate-500">
+                          Görseller yükleniyor...
+                        </div>
+                      ) : [...mediaFiles, ...catalogFiles].length === 0 ? (
+                        <div className="col-span-full py-8 text-center text-xs text-slate-500">
+                          Henüz arşivde görsel bulunamadı.
+                        </div>
+                      ) : (
+                        [...mediaFiles, ...catalogFiles]
+                          .filter(
+                            (f) =>
+                              !categoryPickerSearchQuery ||
+                              f.name.toLowerCase().includes(categoryPickerSearchQuery.toLowerCase())
+                          )
+                          .slice(0, 48)
+                          .map((file, idx) => (
+                            <button
+                              key={`${file.url}-${idx}`}
+                              type="button"
+                              onClick={() =>
+                                handleSetCategoryImage(selectedCategoryToEditImage.slug, file.url)
+                              }
+                              className="group relative flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-[#121826] p-1.5 text-left transition hover:border-sky-500 hover:ring-2 hover:ring-sky-500/20"
+                            >
+                              <div className="relative aspect-[4/3] w-full">
+                                <Image
+                                  src={file.url}
+                                  alt={file.name}
+                                  fill
+                                  className="object-contain p-1"
+                                  unoptimized
+                                />
+                              </div>
+                              <span className="mt-1 block text-[10px] text-slate-300 truncate font-mono">
+                                {file.name}
+                              </span>
+                            </button>
+                          ))
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Manuel URL Girişi */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700">
+                      Veya Görsel URL / Yolu Girin:
+                    </label>
+                    <div className="mt-1 flex gap-2">
+                      <input
+                        type="text"
+                        defaultValue={selectedCategoryToEditImage.currentImage}
+                        id="manualCategoryImageUrl"
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-mono text-slate-900 focus:border-sky-500 focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const input = document.getElementById(
+                            "manualCategoryImageUrl"
+                          ) as HTMLInputElement;
+                          if (input?.value) {
+                            handleSetCategoryImage(
+                              selectedCategoryToEditImage.slug,
+                              input.value.trim()
+                            );
+                          }
+                        }}
+                        className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition"
+                      >
+                        Ata
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
