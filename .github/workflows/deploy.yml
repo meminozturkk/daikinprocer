@@ -1,0 +1,44 @@
+name: Deploy to Production (Self-Hosted Runner)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Avoid concurrent overlapping deployments
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build and Start Containers
+        run: |
+          docker compose build --pull
+          docker compose up -d --remove-orphans
+
+      - name: Health Check
+        run: |
+          echo "Checking container health..."
+          docker compose ps
+          # Wait up to 30 seconds for Next.js to start
+          for i in {1..10}; do
+            if docker compose exec -T app wget -qO- http://127.0.0.1:3333/ > /dev/null 2>&1 || curl -sSf http://127.0.0.1:3333/ > /dev/null 2>&1; then
+              echo "App is healthy and responding on port 3333!"
+              exit 0
+            fi
+            echo "Waiting for app to start (attempt $i/10)..."
+            sleep 3
+          done
+          echo "Warning: Health check did not respond within timeout, check docker logs."
+
+      - name: Clean up unused Docker images
+        if: always()
+        run: |
+          docker image prune -f
