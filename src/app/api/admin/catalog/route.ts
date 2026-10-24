@@ -3,7 +3,8 @@ import fs from "fs/promises";
 import path from "path";
 import { isAuthenticatedAdmin } from "@/lib/admin-auth";
 
-const CATALOG_DIR = path.join(process.cwd(), "public", "sourced", "catalog");
+const PUBLIC_DIR = path.join(process.cwd(), "public");
+const CATALOG_DIR = path.join(PUBLIC_DIR, "sourced", "catalog");
 const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
 const UPLOADS_CATALOG_DIR = path.join(DATA_DIR, "uploads", "catalog");
 
@@ -14,6 +15,8 @@ const ALLOWED_MIME_TYPES = new Set([
   "image/gif",
   "image/svg+xml",
 ]);
+
+const IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"]);
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -44,6 +47,70 @@ function sanitizeCatalogFilename(originalName: string): string {
   return `${safeBase}${ext}`;
 }
 
+async function scanPublicImages(dir: string, baseDir: string = dir): Promise<Array<{
+  name: string;
+  url: string;
+  category: string;
+  size: number;
+  createdAt: number;
+}>> {
+  let results: Array<{
+    name: string;
+    url: string;
+    category: string;
+    size: number;
+    createdAt: number;
+  }> = [];
+
+  try {
+    const dirents = await fs.readdir(dir, { withFileTypes: true });
+
+    for (const d of dirents) {
+      if (d.name.startsWith(".")) continue;
+      const fullPath = path.join(dir, d.name);
+
+      if (d.isDirectory()) {
+        const sub = await scanPublicImages(fullPath, baseDir);
+        results = results.concat(sub);
+      } else if (d.isFile()) {
+        const ext = path.extname(d.name).toLowerCase();
+        if (IMAGE_EXTENSIONS.has(ext)) {
+          const relativePath = path.relative(baseDir, fullPath).replace(/\\/g, "/");
+          const url = `/${relativePath}`;
+          const stat = await fs.stat(fullPath);
+
+          let category = "other";
+          if (url.includes("brand") || url.includes("logo") || url.includes("icon")) {
+            category = "brand";
+          } else if (url.includes("hero") || url.includes("campaigns")) {
+            category = "hero";
+          } else if (url.includes("references")) {
+            category = "references";
+          } else if (url.includes("catalog")) {
+            category = "catalog";
+          } else if (url.includes("misc") || url.includes("icons")) {
+            category = "site";
+          } else if (url.includes("blog")) {
+            category = "blog";
+          }
+
+          results.push({
+            name: d.name,
+            url,
+            category,
+            size: stat.size,
+            createdAt: stat.mtimeMs,
+          });
+        }
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  return results;
+}
+
 export async function GET() {
   const isAuth = await isAuthenticatedAdmin();
   if (!isAuth) {
@@ -51,30 +118,14 @@ export async function GET() {
   }
 
   try {
-    await fs.mkdir(CATALOG_DIR, { recursive: true });
-    const dirents = await fs.readdir(CATALOG_DIR, { withFileTypes: true });
+    const files = await scanPublicImages(PUBLIC_DIR, PUBLIC_DIR);
 
-    const files = await Promise.all(
-      dirents
-        .filter((d) => d.isFile() && !d.name.startsWith("."))
-        .map(async (d) => {
-          const filePath = path.join(CATALOG_DIR, d.name);
-          const stat = await fs.stat(filePath);
-          return {
-            name: d.name,
-            url: `/sourced/catalog/${d.name}`,
-            size: stat.size,
-            createdAt: stat.mtimeMs,
-          };
-        })
-    );
-
-    // Sort newest / alphabetical
-    files.sort((a, b) => a.name.localeCompare(b.name, "tr"));
+    // Sort alphabetically by relative url/name
+    files.sort((a, b) => a.url.localeCompare(b.url, "tr"));
 
     return NextResponse.json({ ok: true, files, count: files.length });
   } catch (err: unknown) {
-    const errorMsg = err instanceof Error ? err.message : "Katalog görselleri okunamadı";
+    const errorMsg = err instanceof Error ? err.message : "Görseller okunamadı";
     return NextResponse.json({ message: errorMsg }, { status: 500 });
   }
 }
@@ -87,48 +138,71 @@ export async function POST(request: Request) {
 
   try {
     const formData = await request.formData();
-    const file = formData.get("file") as File | null;
+    const filesToProcess: File[] = [];
 
-    if (!file) {
+    const fromFiles = formData.getAll("files");
+    const fromFile = formData.getAll("file");
+
+    for (const item of [...fromFiles, ...fromFile]) {
+      if (item && typeof item === "object" && "arrayBuffer" in item && (item as File).size > 0) {
+        filesToProcess.push(item as File);
+      }
+    }
+
+    if (filesToProcess.length === 0) {
       return NextResponse.json({ message: "Lütfen bir dosya seçin" }, { status: 400 });
     }
 
-    if (!ALLOWED_MIME_TYPES.has(file.type)) {
-      return NextResponse.json(
-        { message: "Geçersiz dosya türü. Yalnızca JPG, PNG, WEBP, GIF ve SVG yükleyebilirsiniz." },
-        { status: 400 }
-      );
-    }
-
-    if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json(
-        { message: "Dosya boyutu çok büyük. Maksimum dosya boyutu 10MB'dır." },
-        { status: 400 }
-      );
-    }
-
     await fs.mkdir(CATALOG_DIR, { recursive: true });
-    const safeName = sanitizeCatalogFilename(file.name);
-    const targetPath = path.join(CATALOG_DIR, safeName);
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    await fs.writeFile(targetPath, buffer);
+    const savedFiles: { name: string; url: string; size: number }[] = [];
 
-    // Also backup to persistent uploads if data dir exists
-    try {
-      await fs.mkdir(UPLOADS_CATALOG_DIR, { recursive: true });
-      await fs.writeFile(path.join(UPLOADS_CATALOG_DIR, safeName), buffer);
-    } catch {
-      // Ignore backup error
+    for (const file of filesToProcess) {
+      const ext = path.extname(file.name).toLowerCase();
+      const mime = file.type;
+      const isValidMime =
+        ALLOWED_MIME_TYPES.has(mime) ||
+        [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"].includes(ext);
+
+      if (!isValidMime) {
+        return NextResponse.json(
+          { message: `"${file.name}" geçersiz dosya türü. Yalnızca JPG, PNG, WEBP, GIF ve SVG yükleyebilirsiniz.` },
+          { status: 400 }
+        );
+      }
+
+      if (file.size > MAX_FILE_SIZE) {
+        return NextResponse.json(
+          { message: `"${file.name}" dosya boyutu çok büyük. Maksimum dosya boyutu 10MB'dır.` },
+          { status: 400 }
+        );
+      }
+
+      const safeName = sanitizeCatalogFilename(file.name);
+      const targetPath = path.join(CATALOG_DIR, safeName);
+
+      const buffer = Buffer.from(await file.arrayBuffer());
+      await fs.writeFile(targetPath, buffer);
+
+      // Also backup to persistent uploads if data dir exists
+      try {
+        await fs.mkdir(UPLOADS_CATALOG_DIR, { recursive: true });
+        await fs.writeFile(path.join(UPLOADS_CATALOG_DIR, safeName), buffer);
+      } catch {
+        // Ignore backup error
+      }
+
+      savedFiles.push({
+        name: safeName,
+        url: `/sourced/catalog/${safeName}`,
+        size: file.size,
+      });
     }
 
     return NextResponse.json({
       ok: true,
-      file: {
-        name: safeName,
-        url: `/sourced/catalog/${safeName}`,
-        size: file.size,
-      },
+      file: savedFiles[0],
+      files: savedFiles,
     });
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : "Dosya yüklenemedi";
@@ -143,8 +217,18 @@ export async function DELETE(request: Request) {
   }
 
   try {
-    const body = await request.json();
-    const filename = body?.filename;
+    let filename: string | null = null;
+    const url = new URL(request.url);
+    filename = url.searchParams.get("name") || url.searchParams.get("filename");
+
+    if (!filename) {
+      try {
+        const body = await request.json();
+        filename = body?.filename || body?.name || null;
+      } catch {
+        // Ignore JSON parse error
+      }
+    }
 
     if (!filename || typeof filename !== "string") {
       return NextResponse.json({ message: "Dosya adı belirtilmedi" }, { status: 400 });

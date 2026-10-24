@@ -7,14 +7,15 @@ import { contact } from "@/content/site";
 import { useSiteContent } from "@/lib/SiteContentContext";
 
 export function Footer() {
-  const { contact: dynamicContact } = useSiteContent();
+  const { contact: dynamicContact, services: customServices } = useSiteContent();
   const phoneHref = `tel:${dynamicContact.phoneLandline.replace(/[\s-]/g, "")}`;
+  const serviceList = customServices && customServices.length > 0 ? customServices : services;
 
   return (
     <footer className="mt-auto border-t border-slate-100 bg-[var(--navy)] text-white">
       <div className="container-pro grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-4">
         <div>
-          <p className="text-lg font-bold">Proser Grup</p>
+          <p className="text-lg font-bold">{dynamicContact.brandName || "Proser Grup"}</p>
           <p className="mt-3 text-sm leading-relaxed text-slate-300">
             Daikin yetkili bayi ve yetkili servis. Konut, ticari ve merkezi iklimlendirme
             çözümlerinde keşif, satış, montaj ve teknik servis.
@@ -35,7 +36,7 @@ export function Footer() {
         <div>
           <p className="font-semibold">Hizmetler</p>
           <ul className="mt-3 space-y-2 text-sm text-slate-300">
-            {services.map((s) => (
+            {serviceList.map((s) => (
               <li key={s.slug}>
                 <Link href={`/hizmetler/${s.slug}`} className="hover:text-white">
                   {s.name}
@@ -43,8 +44,8 @@ export function Footer() {
               </li>
             ))}
             <li>
-              <Link href="/bolgeler/kartal" className="hover:text-white">
-                Kartal Daikin Servis
+              <Link href="/servis-talebi" className="hover:text-white">
+                Yetkili Servis Talebi
               </Link>
             </li>
           </ul>

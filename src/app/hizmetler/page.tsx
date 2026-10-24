@@ -2,7 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { PageHero } from "@/components/ui/PageHero";
 import { Section } from "@/components/ui/Section";
-import { services } from "@/content/services";
+import { services as defaultServices } from "@/content/services";
+import { getSiteContent } from "@/lib/site-content";
 import { createMetadata, breadcrumbJsonLd } from "@/lib/seo";
 
 export const metadata = createMetadata({
@@ -12,7 +13,12 @@ export const metadata = createMetadata({
   path: "/hizmetler",
 });
 
-export default function HizmetlerPage() {
+export default async function HizmetlerPage() {
+  const siteContent = await getSiteContent();
+  const serviceList = siteContent.services && siteContent.services.length > 0
+    ? siteContent.services
+    : defaultServices;
+
   return (
     <>
       <PageHero
@@ -29,26 +35,28 @@ export default function HizmetlerPage() {
       />
       <Section>
         <div className="grid gap-5 md:grid-cols-2">
-          {services.map((service) => (
+          {serviceList.map((service) => (
             <Link
               key={service.slug}
               href={`/hizmetler/${service.slug}`}
-              className="card-surface block overflow-hidden"
+              className="card-surface block overflow-hidden group hover:border-[var(--daikin-blue)] transition"
             >
               {service.image ? (
-                <div className="relative aspect-[16/9] bg-[var(--ice)]">
+                <div className="relative aspect-[16/9] bg-[var(--ice)] overflow-hidden">
                   <Image
                     src={service.image}
                     alt={service.name}
                     fill
-                    className="object-cover"
+                    className="object-cover group-hover:scale-105 transition duration-500"
                     sizes="(max-width:768px) 100vw, 50vw"
                   />
                 </div>
               ) : null}
               <div className="p-6">
-                <h2 className="text-xl font-semibold text-[var(--navy)]">{service.name}</h2>
-                <p className="mt-3 text-sm text-[var(--slate)]">{service.summary}</p>
+                <h2 className="text-xl font-semibold text-[var(--navy)] group-hover:text-[var(--daikin-blue)] transition">
+                  {service.name}
+                </h2>
+                <p className="mt-3 text-sm text-[var(--slate)] leading-relaxed">{service.summary}</p>
               </div>
             </Link>
           ))}

@@ -1,6 +1,7 @@
 {
   "contact": {
     "brandName": "Proser Grup",
+    "legalName": "Proser Grup İklimlendirme",
     "tagline": "Daikin yetkili bayi ve teknik servis — Kartal / İstanbul",
     "phoneLandline": "0 216 759 41 13",
     "phoneMobile": "0 536 860 87 70",
@@ -8,7 +9,24 @@
     "email": "info@prosergrup.com",
     "hours": "Pazartesi – Cumartesi 09:00 – 18:00",
     "addressFull": "Gümüşpınar Mahallesi Elmaağacı Sokak No:6A-B Kartal / İstanbul",
-    "district": "Kartal"
+    "street": "Gümüşpınar Mahallesi Elmaağacı Sokak No:6A-B",
+    "district": "Kartal",
+    "city": "İstanbul",
+    "serviceArea": [
+      "Kartal",
+      "Maltepe",
+      "Pendik",
+      "Tuzla",
+      "Ataşehir",
+      "Kadıköy",
+      "Ümraniye",
+      "Sancaktepe",
+      "Sultanbeyli",
+      "Gebze",
+      "Çayırova",
+      "Darıca",
+      "İstanbul Avrupa Yakası"
+    ]
   },
   "hero": {
     "badge": "Daikin Yetkili Bayi ve Yetkili Servis",
@@ -41,6 +59,378 @@
       "description": "Keşiften projelendirmeye, montajdan periyodik bakıma tek noktadan hizmet."
     }
   ],
+  "campaign": {
+    "enabled": true,
+    "image": "/campaigns/ilk-bakim-hediye.jpg",
+    "alt": "Proser Grup İlk Bakım Hediye Kampanyası",
+    "subtitle": "Daikin klima ve VRV sistemlerinde geçerli özel kampanya.",
+    "buttonText": "WhatsApp ile Teklif Al →",
+    "whatsappMessage": "Merhaba, İlk Bakım Hediye kampanyanız hakkında bilgi ve teklif almak istiyorum.",
+    "cooldownMinutes": 10
+  },
+  "homeSections": {
+    "trust": {
+      "visible": true,
+      "eyebrow": "Güven ve Yetki",
+      "title": "Daikin Standartlarında Mühendislik Güvencesi",
+      "description": "Sadece cihaz satışı değil; doğru kapasite seçimi, garantili montaj ve satış sonrası yetkili servis desteği."
+    },
+    "categories": {
+      "visible": true,
+      "eyebrow": "Resmi Ürün Gamı",
+      "title": "Daikin İklimlendirme Teknolojileri",
+      "description": "A+++ enerji verimliliği, 19 dB ultra sessiz mod ve Japon mühendislik hassasiyeti ile tasarlanan resmi Daikin serileri."
+    },
+    "systemArchitecture": {
+      "visible": true,
+      "eyebrow": "Sistem Mimarisi",
+      "title": "Konut mu, Ticari & Merkezi Sistem mi?",
+      "description": "İhtiyacınıza en uygun sistem mimarisini seçin. Deneyimli mühendis kadromuz mekanınıza özel kapasite planlaması sunar.",
+      "residentialBadge": "BİREYSEL YAŞAM ALANLARI",
+      "residentialTitle": "Konut İklimlendirme Çözümleri",
+      "residentialDescription": "Daireler, müstakil evler ve villalar için yüksek enerji verimliliği ve sessiz konfor sunan Daikin çözümleri.",
+      "residentialFeatures": [
+        "Oda metrekaresine ve cephesine göre hassas BTU kapasite tayini",
+        "Duvar tipi split & tek dış üniteli multi-split seçenekleri",
+        "Daikin Altherma havadan suya ısı pompası ile doğalgaz bağımsızlığı"
+      ],
+      "commercialBadge": "İŞLETMELER & PROJELER",
+      "commercialTitle": "Ticari & VRV Merkezi Sistemler",
+      "commercialDescription": "Mağaza, ofis katı, otel, restoran ve endüstriyel tesisler için esnek borulama ve akıllı otomasyon altyapısı.",
+      "commercialFeatures": [
+        "Sky Air kaset, kanallı ve tavan tipi ticari split iklimlendirme",
+        "VRV çok bölgeli eş zamanlı ısıtma ve soğutma (Heat Recovery)",
+        "Merkezi kumanda ve bina yönetim sistemlerine (BMS) entegrasyon"
+      ]
+    },
+    "workflow": {
+      "visible": true,
+      "eyebrow": "Süreç Yönetimi",
+      "title": "Keşiften Servise 4 Aşamalı Mühendislik Akışı",
+      "description": "Şeffaf iletişim, resmi marka standartları ve garantili işçilik ile anahtar teslim süreç."
+    },
+    "featuredProducts": {
+      "visible": true,
+      "eyebrow": "Öne Çıkan Modeller",
+      "title": "En Çok Tercih Edilen Daikin Serileri",
+      "description": "Fiyat karmaşası yerine doğrudan ihtiyaca ve mekana özel net tekliflendirme."
+    },
+    "references": {
+      "visible": true,
+      "eyebrow": "Referanslar",
+      "title": "Mühendisliğimize Güvenen Projeler",
+      "description": "Kamu kurumlarından otelcilik ve perakende devlerine kadar tamamlanan başarılı iklimlendirme projelerimiz."
+    },
+    "faq": {
+      "visible": true,
+      "eyebrow": "Merak Edilenler",
+      "title": "Sıkça Sorulan Sorular",
+      "description": "Yetki belgeleri, keşif süreci, garanti kapsamı ve montaj hakkında net cevaplar."
+    },
+    "blog": {
+      "visible": true,
+      "eyebrow": "Rehberler & Blog",
+      "title": "İklimlendirme Uzmanlığı & Tavsiyeler",
+      "description": "Doğru klima seçimi, enerji verimliliği ve periyodik bakım hakkında güncel teknik yazılar."
+    },
+    "bottomCta": {
+      "visible": true,
+      "badge": "Resmi Daikin Yetkili Noktası",
+      "title": "Merkezli Profesyonel İklimlendirme"
+    }
+  },
+  "services": [
+    {
+      "slug": "satis-ve-projelendirme",
+      "name": "Satış ve Projelendirme",
+      "summary": "İhtiyaca uygun Daikin ürün seçimi, keşif ve mühendislik odaklı tekliflendirme.",
+      "description": "Proser Grup olarak keşiften ürün seçimine kadar süreci yönetiyoruz. Alan ölçümü, yük hesabı yaklaşımı, doğru kapasite önerisi ve bütçeye uygun Daikin çözümleri sunuyoruz.",
+      "steps": [
+        "Keşif ve ihtiyaç analizi",
+        "Ürün / sistem önerisi",
+        "Teklif ve zaman planı",
+        "Sipariş ve lojistik koordinasyonu"
+      ],
+      "benefits": [
+        "Doğru kapasite ile enerji tasarrufu",
+        "Konut ve ticari proje deneyimi",
+        "Şeffaf teklif süreci"
+      ],
+      "seoTitle": "Daikin Klima Satış ve Projelendirme | Proser Grup",
+      "seoDescription": "Daikin klima ve VRV projelendirme, keşif ve satış. Proser Grup yetkili bayi — Kartal / İstanbul.",
+      "image": "/sourced/hero/vrf-showcase.png"
+    },
+    {
+      "slug": "montaj",
+      "name": "Profesyonel Montaj",
+      "summary": "Standartlara uygun montaj, vakumlama, gaz şarjı ve devreye alma.",
+      "description": "Daikin cihazlarının uzun ömürlü ve verimli çalışması doğru montaj ile başlar. Borulama, drenaj, elektrik bağlantıları ve devreye alma adımlarını uzman ekibimizle yürütüyoruz.",
+      "steps": [
+        "Saha hazırlığı ve yerleşim",
+        "Borulama / drenaj / elektrik",
+        "Vakumlama ve sızdırmazlık kontrolü",
+        "Devreye alma ve kullanıcı bilgilendirme"
+      ],
+      "benefits": [
+        "Garanti koşullarına uygun uygulama",
+        "Temiz işçilik ve güvenlik",
+        "Çalışma testi ve teslim tutanağı"
+      ],
+      "seoTitle": "Daikin Klima Montajı | Proser Grup Kartal",
+      "seoDescription": "Daikin klima ve sistem montajı, vakumlama ve devreye alma. Proser Grup yetkili bayi hizmeti.",
+      "image": "/sourced/misc/service.jpg"
+    },
+    {
+      "slug": "bakim",
+      "name": "Periyodik Bakım",
+      "summary": "Performans, hijyen ve enerji verimliliği için düzenli klima bakımı.",
+      "description": "Filtre temizliği, ısı eşanjörü bakımı, gaz basıncı kontrolü ve genel sistem kontrolü ile cihazlarınızın ilk günkü performansına yakın çalışmasını hedefliyoruz.",
+      "steps": [
+        "Görsel ve performans kontrolü",
+        "Filtre ve iç ünite hijyeni",
+        "Basınç / elektrik kontrolleri",
+        "Bakım raporu ve öneriler"
+      ],
+      "benefits": [
+        "Daha düşük arıza riski",
+        "Daha sağlıklı iç hava",
+        "Enerji tüketiminde iyileşme"
+      ],
+      "seoTitle": "Daikin Klima Bakımı | Proser Grup Yetkili Servis",
+      "seoDescription": "Daikin periyodik klima bakımı Kartal ve Anadolu Yakası. Proser Grup yetkili teknik servis.",
+      "image": "/sourced/icons/servis.png"
+    },
+    {
+      "slug": "yetkili-servis",
+      "name": "Daikin Yetkili Servis",
+      "summary": "Arıza tespiti, onarım, orijinal yedek parça ve garanti süreç desteği.",
+      "description": "Yetkili servis olarak bilgisayar destekli arıza tespiti, orijinal yedek parça, montaj-demontaj, revizyon ve süpervizörlük hizmetleri sunuyoruz.",
+      "steps": [
+        "Arıza bildirimi / randevu",
+        "Yerinde teşhis",
+        "Onarım veya parça değişimi",
+        "Test, garanti kaydı ve bilgilendirme"
+      ],
+      "benefits": [
+        "Orijinal yedek parça",
+        "Marka prosedürlerine uygun süreç",
+        "Hızlı ve şeffaf iletişim"
+      ],
+      "seoTitle": "Daikin Yetkili Servis Kartal | Proser Grup",
+      "seoDescription": "Daikin yetkili teknik servis: arıza, onarım, yedek parça. Proser Grup — Kartal / İstanbul.",
+      "image": "/sourced/misc/about.jpg"
+    }
+  ],
+  "faqs": [
+    {
+      "question": "Proser Grup Daikin yetkili bayi ve servis midir?",
+      "answer": "Evet. Proser Grup, Daikin ürünlerinin satışı ve montaj sonrası teknik servis süreçlerinde yetkili bayi ve yetkili servis olarak hizmet verir. Güncel unvan ifadesi için bayi belgenizdeki resmi metin siteye yansıtılır."
+    },
+    {
+      "question": "Hangi bölgelere hizmet veriyorsunuz?",
+      "answer": "Merkezimiz Kartal’dadır. Maltepe, Pendik, Tuzla, Ataşehir, Kadıköy, Ümraniye, Sancaktepe, Sultanbeyli ve İstanbul Anadolu Yakası’nda keşif, satış, montaj ve servis hizmeti sunuyoruz."
+    },
+    {
+      "question": "Teklif süreci nasıl işler?",
+      "answer": "Online form, WhatsApp veya telefon ile talebinizi alıyoruz. Gerekirse yerinde keşif yapıp uygun Daikin ürün/sistem önerisi ve yazılı teklif hazırlıyoruz. Sitede sabit fiyat listesi yayınlamıyoruz; kapasite ve uygulama koşullarına göre netleştiriyoruz."
+    },
+    {
+      "question": "Montaj sonrası garanti nasıl işler?",
+      "answer": "Ürün garantisi Daikin’in güncel garanti koşullarına tabidir. Uygun montaj ve yetkili servis süreçleri garanti haklarının korunması için kritiktir. Detayları teklif ve teslim aşamasında yazılı olarak paylaşıyoruz."
+    },
+    {
+      "question": "Periyodik bakım ne sıklıkla yapılmalı?",
+      "answer": "Yoğun kullanıma göre yılda en az bir, tercihen sezon öncesi iki bakım önerilir. Ticari ve merkezi sistemlerde kullanım yoğunluğuna göre bakım periyodu kısaltılabilir."
+    }
+  ],
+  "references": [
+    {
+      "name": "İstanbul Büyükşehir Belediyesi",
+      "sector": "Kamu",
+      "summary": "Kurumsal iklimlendirme uygulamaları kapsamında referans projeler.",
+      "image": "/sourced/references/ibb.jpg"
+    },
+    {
+      "name": "Meykon Meyve Suları",
+      "sector": "Endüstriyel",
+      "summary": "Üretim ve ofis alanlarında iklimlendirme çözümleri.",
+      "image": "/sourced/references/meykon.jpg"
+    },
+    {
+      "name": "Doğtaş",
+      "sector": "Perakende",
+      "summary": "Mağaza ve ticari alan iklimlendirme uygulamaları.",
+      "image": "/sourced/references/dogtas.jpg"
+    },
+    {
+      "name": "Doğuş Oto",
+      "sector": "Otomotiv",
+      "summary": "Showroom ve servis alanları için iklimlendirme.",
+      "image": "/sourced/references/dogus-oto.jpg"
+    },
+    {
+      "name": "Luna Bodrum",
+      "sector": "Turizm",
+      "summary": "Konaklama tesisinde konfor odaklı iklimlendirme.",
+      "image": "/sourced/references/luna-bodrum.jpg"
+    },
+    {
+      "name": "Piri Reis Üniversitesi",
+      "sector": "Eğitim",
+      "summary": "Eğitim yapılarında iklimlendirme uygulamaları.",
+      "image": "/sourced/references/piri-reis.jpg"
+    },
+    {
+      "name": "Mövenpick Güneşli",
+      "sector": "Otelcilik",
+      "summary": "Otel alanlarında iklimlendirme ve konfor yönetimi.",
+      "image": "/sourced/references/movenpick.jpg"
+    },
+    {
+      "name": "Arnavutköy Belediyesi",
+      "sector": "Kamu",
+      "summary": "Belediye hizmet binalarında iklimlendirme desteği.",
+      "image": "/sourced/references/arnavutkoy.jpg"
+    }
+  ],
+  "navigation": [
+    {
+      "href": "/",
+      "label": "Anasayfa"
+    },
+    {
+      "href": "/kurumsal",
+      "label": "Kurumsal"
+    },
+    {
+      "href": "/urunler",
+      "label": "Daikin Ürünleri",
+      "children": [
+        {
+          "href": "/urunler/bireysel-klimalar",
+          "label": "Daikin Bireysel Klimalar"
+        },
+        {
+          "href": "/urunler/multi-split",
+          "label": "Daikin Multi Split"
+        },
+        {
+          "href": "/urunler/ticari-klimalar",
+          "label": "Daikin Sky Air Ticari"
+        },
+        {
+          "href": "/urunler/vrv-sistemleri",
+          "label": "Daikin VRV Sistemleri"
+        },
+        {
+          "href": "/urunler/isi-pompalari",
+          "label": "Daikin Altherma Isı Pompası"
+        },
+        {
+          "href": "/urunler/havalandirma",
+          "label": "Daikin Havalandırma"
+        }
+      ]
+    },
+    {
+      "href": "/hizmetler",
+      "label": "Hizmetler",
+      "children": [
+        {
+          "href": "/hizmetler/satis-ve-projelendirme",
+          "label": "Daikin Satış & Projelendirme"
+        },
+        {
+          "href": "/hizmetler/montaj",
+          "label": "Daikin Yetkili Montaj"
+        },
+        {
+          "href": "/hizmetler/bakim",
+          "label": "Daikin Periyodik Bakım"
+        },
+        {
+          "href": "/hizmetler/yetkili-servis",
+          "label": "Daikin Yetkili Servis"
+        }
+      ]
+    },
+    {
+      "href": "/referanslar",
+      "label": "Referanslar"
+    },
+    {
+      "href": "/blog",
+      "label": "Blog"
+    },
+    {
+      "href": "/iletisim",
+      "label": "İletişim"
+    }
+  ],
+  "pages": {
+    "kurumsal": {
+      "title": "Kurumsal",
+      "description": "İklimlendirme sektöründe birikmiş kurumsal deneyimle 2022’de kurulan Proser Grup; Daikin yetkili bayi ve yetkili servis olarak uçtan uca çözüm sunar.",
+      "image": "/sourced/misc/about.jpg",
+      "paragraphs": [
+        "Proser Grup; iklimlendirme sektörünün lider firmalarında kazanılan 10 yılı aşkın kurumsal deneyimin verdiği güvene dayanarak 2022 yılında kurulmuştur.",
+        "Konut, ticari ve endüstriyel yapıların iklimlendirme ihtiyaçlarında danışmanlık, ürün temini, uygulama, otomasyon ve teknik servis süreçlerini bütünleşik yönetiriz.",
+        "Bugün resmi konumumuz: Daikin Yetkili Bayi ve Yetkili Servis. Tüm marka ve ürün iletişimimiz onaylı Daikin kurumsal kimlik kurallarına uygundur."
+      ]
+    },
+    "iletisim": {
+      "title": "İletişim & Konum",
+      "description": "Daikin ürünleri, keşif ve yetkili servis talepleriniz için bize ulaşın. Kartal merkezli ofisimiz tüm Anadolu ve Avrupa Yakası'na hizmet verir."
+    },
+    "teklifAl": {
+      "title": "Ücretsiz Keşif & Fiyat Teklifi",
+      "description": "Mekanınıza en uygun Daikin klima ve sistem seçimi için bilgilerinizi iletin; uzman ekibimiz aynı gün değerlendirip dönsün."
+    },
+    "servisTalebi": {
+      "title": "Daikin Yetkili Servis Talebi",
+      "description": "Arıza, periyodik bakım, montaj veya yedek parça talebinizi bildirin; Daikin yetkili servis güvencesiyle hızla müdahale edelim."
+    },
+    "kvkk": {
+      "title": "KVKK Aydınlatma Metni",
+      "description": "6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında bilgilendirme.",
+      "paragraphs": [
+        "Web sitesi üzerindeki teklif, servis ve iletişim formları aracılığıyla ilettiğiniz ad soyad, telefon, e-posta, adres ve talep içeriği; talebinizin karşılanması, geri dönüş yapılması ve müşteri ilişkileri süreçlerinin yürütülmesi amacıyla işlenir.",
+        "Verileriniz, yasal yükümlülükler ve meşru menfaat kapsamında gerekli süre boyunca saklanır; üçüncü taraflarla pazarlama amacıyla paylaşılmaz.",
+        "KVKK kapsamındaki haklarınız için şirketimizin resmi iletişim kanallarına başvurabilirsiniz."
+      ]
+    },
+    "gizlilik": {
+      "title": "Gizlilik Politikası",
+      "description": "Kullanıcı gizliliği, çerez politikası ve veri güvenliği esasları.",
+      "paragraphs": [
+        "Proser Grup, web sitesini ziyaret eden kullanıcıların gizliliğine saygı duyar ve kişisel verilerin korunmasını temel ilke kabul eder.",
+        "Sitemizde kullanıcı deneyimini iyileştirmek ve form güvenliğini sağlamak amacıyla teknik çerezler kullanılmaktadır. Üçüncü taraf reklam takipçisi barındırılmaz.",
+        "Toplanan iletişim verileri yalnızca talep ettiğiniz iklimlendirme ve servis hizmetlerinin ifası amacıyla kullanılır."
+      ]
+    }
+  },
+  "seo": {
+    "globalTitle": "Daikin Yetkili Bayi ve Yetkili Servis | Proser Grup Kartal İstanbul",
+    "globalDescription": "Daikin Yetkili Bayi ve Yetkili Servisi Proser Grup. Daikin inverter klimalar, VRV merkezi iklimlendirme sistemleri, Altherma ısı pompaları, ücretsiz keşif, garantili montaj ve teknik servis. Kartal / İstanbul.",
+    "globalKeywords": [
+      "Daikin",
+      "Daikin yetkili bayi",
+      "Daikin yetkili servis",
+      "Daikin klima",
+      "Daikin Kartal yetkili servis",
+      "Daikin VRV sistemleri",
+      "Daikin Altherma ısı pompası",
+      "Daikin split klima",
+      "Daikin montaj ve bakım",
+      "Proser Grup Daikin",
+      "İstanbul Daikin bayi",
+      "Gebze Daikin servisi",
+      "klima servis",
+      "hedef servis",
+      "proser",
+      "proser grup"
+    ]
+  },
   "posts": [
     {
       "slug": "klima-secerken-nelere-dikkat-etmeliyiz",
@@ -159,5 +549,6 @@
     "isi-pompalari": {
       "image": "/sourced/catalog/ftxj42ab-inverter-klima-r32emura-14000-btu-h-a.webp"
     }
-  }
+  },
+  "productOverrides": {}
 }

@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { navigation } from "@/content/site";
-import { contact } from "@/content/site";
 import { useSiteContent } from "@/lib/SiteContentContext";
 import { Button } from "@/components/ui/Button";
 import { cn, getWhatsAppUrl } from "@/lib/utils";
@@ -12,7 +11,9 @@ import { cn, getWhatsAppUrl } from "@/lib/utils";
 export function Header() {
   const [open, setOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  const { contact: dynamicContact, hero } = useSiteContent();
+  const { contact: dynamicContact, hero, navigation: dynamicNav } = useSiteContent();
+
+  const navLinks = dynamicNav && dynamicNav.length > 0 ? dynamicNav : navigation;
 
   const phoneHref = `tel:${dynamicContact.phoneLandline.replace(/[\s-]/g, "")}`;
   const whatsappQuoteHref = getWhatsAppUrl(
@@ -60,7 +61,7 @@ export function Header() {
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Ana menü">
-          {navigation.map((item) => (
+          {navLinks.map((item) => (
             <div
               key={item.href}
               className="relative"
@@ -119,7 +120,7 @@ export function Header() {
       {open ? (
         <div id="mobile-menu" className="border-t border-slate-100 bg-white lg:hidden">
           <div className="container-pro flex flex-col gap-1 py-4">
-            {navigation.map((item) => (
+            {navLinks.map((item) => (
               <div key={item.href}>
                 <Link
                   href={item.href}

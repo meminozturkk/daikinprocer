@@ -163,8 +163,40 @@ export const products: Product[] = [
   ...legacyProducts,
 ];
 
+export type ProductOverrideMap = Record<
+  string,
+  {
+    name?: string;
+    summary?: string;
+    highlights?: string[];
+    image?: string;
+    featured?: boolean;
+    hidden?: boolean;
+  }
+>;
+
+export function applyProductOverrides(
+  p: Product,
+  productImages?: Record<string, string>,
+  productOverrides?: ProductOverrideMap
+): Product {
+  const item = { ...p };
+  if (productImages && productImages[p.slug]) {
+    item.image = productImages[p.slug];
+  }
+  if (productOverrides && productOverrides[p.slug]) {
+    const o = productOverrides[p.slug];
+    if (o.name?.trim()) item.name = o.name.trim();
+    if (o.summary?.trim()) item.summary = o.summary.trim();
+    if (o.image?.trim()) item.image = o.image.trim();
+    if (Array.isArray(o.highlights) && o.highlights.length > 0) item.highlights = o.highlights;
+    if (typeof o.featured === "boolean") item.featured = o.featured;
+  }
+  return item;
+}
+
 export function getCategories(
-  overrides?: Record<string, { name?: string; description?: string; image?: string; badge?: string }>
+  overrides?: Record<string, { name?: string; description?: string; image?: string; badge?: string; seoTitle?: string; seoDescription?: string }>
 ): Category[] {
   if (!overrides || Object.keys(overrides).length === 0) return categories;
   return categories.map((c) => {
@@ -176,40 +208,68 @@ export function getCategories(
       description: o.description?.trim() ? o.description.trim() : c.description,
       image: o.image?.trim() ? o.image.trim() : c.image,
       badge: o.badge?.trim() ? o.badge.trim() : c.badge,
+      seoTitle: o.seoTitle?.trim() ? o.seoTitle.trim() : c.seoTitle,
+      seoDescription: o.seoDescription?.trim() ? o.seoDescription.trim() : c.seoDescription,
     };
   });
 }
 
 export function getCategory(
   slug: string,
-  overrides?: Record<string, { name?: string; description?: string; image?: string; badge?: string }>
+  overrides?: Record<string, { name?: string; description?: string; image?: string; badge?: string; seoTitle?: string; seoDescription?: string }>
 ) {
   return getCategories(overrides).find((c) => c.slug === slug);
 }
 
-export function getProductsByCategory(slug: string, overrides?: Record<string, string>) {
-  const list = products.filter((p) => p.category === slug);
-  if (!overrides || Object.keys(overrides).length === 0) return list;
-  return list.map((p) => (overrides[p.slug] ? { ...p, image: overrides[p.slug] } : p));
+export function getAllProducts(
+  productImages?: Record<string, string>,
+  productOverrides?: ProductOverrideMap,
+  includeHidden = false
+): Product[] {
+  return products
+    .filter((p) => {
+      if (includeHidden) return true;
+      return !productOverrides?.[p.slug]?.hidden;
+    })
+    .map((p) => applyProductOverrides(p, productImages, productOverrides));
 }
 
-export function getProduct(slug: string, overrides?: Record<string, string>) {
-  const p = products.find((p) => p.slug === slug);
+export function getProductsByCategory(
+  slug: string,
+  productImages?: Record<string, string>,
+  productOverrides?: ProductOverrideMap
+): Product[] {
+  return products
+    .filter((p) => p.category === slug && !productOverrides?.[p.slug]?.hidden)
+    .map((p) => applyProductOverrides(p, productImages, productOverrides));
+}
+
+export function getProduct(
+  slug: string,
+  productImages?: Record<string, string>,
+  productOverrides?: ProductOverrideMap
+): Product | undefined {
+  const p = products.find((item) => item.slug === slug);
   if (!p) return undefined;
-  if (overrides && overrides[p.slug]) {
-    return { ...p, image: overrides[p.slug] };
-  }
-  return p;
+  if (productOverrides?.[slug]?.hidden) return undefined;
+  return applyProductOverrides(p, productImages, productOverrides);
 }
 
-export function getFeaturedProducts(overrides?: Record<string, string>) {
-  const list = products.filter((p) => p.featured);
-  if (!overrides || Object.keys(overrides).length === 0) return list;
-  return list.map((p) => (overrides[p.slug] ? { ...p, image: overrides[p.slug] } : p));
+export function getFeaturedProducts(
+  productImages?: Record<string, string>,
+  productOverrides?: ProductOverrideMap
+): Product[] {
+  return products
+    .map((p) => applyProductOverrides(p, productImages, productOverrides))
+    .filter((p) => p.featured && !productOverrides?.[p.slug]?.hidden);
 }
 
-export function getSeriesForCategory(slug: string) {
+export function getSeriesForCategory(
+  slug: string,
+  productImages?: Record<string, string>,
+  productOverrides?: ProductOverrideMap
+) {
   return [
-    ...new Set(getProductsByCategory(slug).map((p) => p.series).filter(Boolean)),
+    ...new Set(getProductsByCategory(slug, productImages, productOverrides).map((p) => p.series).filter(Boolean)),
   ].sort((a, b) => a.localeCompare(b, "tr"));
 }

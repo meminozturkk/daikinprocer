@@ -11,7 +11,6 @@ import {
 } from "@/content/products";
 import { getSiteContent } from "@/lib/site-content";
 import { createMetadata, breadcrumbJsonLd } from "@/lib/seo";
-import { contact } from "@/content/site";
 import { getWhatsAppUrl } from "@/lib/utils";
 
 type Props = { params: Promise<{ category: string }> };
@@ -22,11 +21,12 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props) {
   const { category } = await params;
-  const cat = getCategory(category);
+  const siteContent = await getSiteContent();
+  const cat = getCategory(category, siteContent.categoryOverrides);
   if (!cat) return {};
   return createMetadata({
-    title: cat.seoTitle,
-    description: cat.seoDescription,
+    title: cat.seoTitle || `${cat.name} | Daikin Yetkili Bayi`,
+    description: cat.seoDescription || cat.description,
     path: `/urunler/${cat.slug}`,
   });
 }
@@ -36,8 +36,19 @@ export default async function CategoryPage({ params }: Props) {
   const siteContent = await getSiteContent();
   const cat = getCategory(category, siteContent.categoryOverrides);
   if (!cat) notFound();
-  const items = getProductsByCategory(cat.slug, siteContent.productImages);
-  const seriesList = getSeriesForCategory(cat.slug);
+
+  const items = getProductsByCategory(
+    cat.slug,
+    siteContent.productImages,
+    siteContent.productOverrides
+  );
+  const seriesList = getSeriesForCategory(
+    cat.slug,
+    siteContent.productImages,
+    siteContent.productOverrides
+  );
+
+  const contact = siteContent.contact;
 
   return (
     <>
@@ -59,7 +70,7 @@ export default async function CategoryPage({ params }: Props) {
         <div className="mb-8 flex flex-wrap gap-3">
           <Button
             href={getWhatsAppUrl(
-              contact.whatsapp.display,
+              contact.whatsapp,
               `Merhaba, ${cat.name} kategorisindeki Daikin ürünleri için teklif almak istiyorum.`
             )}
             variant="whatsapp"
@@ -71,7 +82,10 @@ export default async function CategoryPage({ params }: Props) {
             Teklif Formu
           </Button>
           <Button
-            href={getWhatsAppUrl(contact.whatsapp.display, `Merhaba, ${cat.name} ürünleri için yetkili servis talebinde bulunmak istiyorum.`)}
+            href={getWhatsAppUrl(
+              contact.whatsapp,
+              `Merhaba, ${cat.name} ürünleri için yetkili servis talebinde bulunmak istiyorum.`
+            )}
             variant="ghost"
             external
           >

@@ -87,40 +87,63 @@ export async function POST(request: Request) {
 
   try {
     const formData = await request.formData();
-    const file = formData.get("file") as File | null;
+    const filesToProcess: File[] = [];
 
-    if (!file) {
+    const fromFiles = formData.getAll("files");
+    const fromFile = formData.getAll("file");
+
+    for (const item of [...fromFiles, ...fromFile]) {
+      if (item && typeof item === "object" && "arrayBuffer" in item && (item as File).size > 0) {
+        filesToProcess.push(item as File);
+      }
+    }
+
+    if (filesToProcess.length === 0) {
       return NextResponse.json({ message: "Lütfen bir dosya seçin" }, { status: 400 });
     }
 
-    if (!ALLOWED_MIME_TYPES.has(file.type)) {
-      return NextResponse.json(
-        { message: "Geçersiz dosya türü. Yalnızca JPG, PNG, WEBP, GIF ve SVG yükleyebilirsiniz." },
-        { status: 400 }
-      );
-    }
-
-    if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json(
-        { message: "Dosya boyutu çok büyük. Maksimum dosya boyutu 10MB'dır." },
-        { status: 400 }
-      );
-    }
-
     await fs.mkdir(UPLOADS_DIR, { recursive: true });
-    const safeName = sanitizeFilename(file.name);
-    const targetPath = path.join(UPLOADS_DIR, safeName);
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    await fs.writeFile(targetPath, buffer);
+    const savedFiles: { name: string; url: string; size: number }[] = [];
 
-    return NextResponse.json({
-      ok: true,
-      file: {
+    for (const file of filesToProcess) {
+      const ext = path.extname(file.name).toLowerCase();
+      const mime = file.type;
+      const isValidMime =
+        ALLOWED_MIME_TYPES.has(mime) ||
+        [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"].includes(ext);
+
+      if (!isValidMime) {
+        return NextResponse.json(
+          { message: `"${file.name}" geçersiz dosya türü. Yalnızca JPG, PNG, WEBP, GIF ve SVG yükleyebilirsiniz.` },
+          { status: 400 }
+        );
+      }
+
+      if (file.size > MAX_FILE_SIZE) {
+        return NextResponse.json(
+          { message: `"${file.name}" dosya boyutu çok büyük. Maksimum dosya boyutu 10MB'dır.` },
+          { status: 400 }
+        );
+      }
+
+      const safeName = sanitizeFilename(file.name);
+      const targetPath = path.join(UPLOADS_DIR, safeName);
+
+      const buffer = Buffer.from(await file.arrayBuffer());
+      await fs.writeFile(targetPath, buffer);
+
+      savedFiles.push({
         name: safeName,
         url: `/uploads/${safeName}`,
         size: file.size,
-      },
+      });
+    }
+
+    return NextResponse.json({
+      ok: true,
+      file: savedFiles[0],
+      files: savedFiles,
     });
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : "Dosya yüklenemedi";
@@ -135,8 +158,18 @@ export async function DELETE(request: Request) {
   }
 
   try {
-    const body = await request.json();
-    const filename = body?.filename;
+    let filename: string | null = null;
+    const url = new URL(request.url);
+    filename = url.searchParams.get("name") || url.searchParams.get("filename");
+
+    if (!filename) {
+      try {
+        const body = await request.json();
+        filename = body?.filename || body?.name || null;
+      } catch {
+        // ignore body parse error
+      }
+    }
 
     if (!filename || typeof filename !== "string") {
       return NextResponse.json({ message: "Dosya adı belirtilmedi" }, { status: 400 });

@@ -2,7 +2,7 @@ import { PageHero } from "@/components/ui/PageHero";
 import { Section } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { QuoteForm } from "@/components/forms/LeadForms";
-import { contact } from "@/content/site";
+import { getSiteContent } from "@/lib/site-content";
 import { createMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { getWhatsAppUrl } from "@/lib/utils";
 
@@ -17,16 +17,25 @@ export const metadata = createMetadata({
 
 export default async function TeklifPage({ searchParams }: Props) {
   const { urun } = await searchParams;
+  const siteContent = await getSiteContent();
+  const contact = siteContent.contact;
+  const teklifData = siteContent.pages?.teklifAl;
+
   const whatsappOfferHref = getWhatsAppUrl(
-    contact.whatsapp.display,
-    urun ? `Merhaba, ${urun} hakkında fiyat ve keşif teklifi almak istiyorum.` : "Merhaba, Daikin ürün ve sistemleri hakkında teklif almak istiyorum."
+    contact.whatsapp,
+    urun
+      ? `Merhaba, ${urun} hakkında fiyat ve keşif teklifi almak istiyorum.`
+      : "Merhaba, Daikin ürün ve sistemleri hakkında teklif almak istiyorum."
   );
 
   return (
     <>
       <PageHero
-        title="Ücretsiz Teklif / Keşif"
-        description="İhtiyacınızı yazın; ekibimiz sizi arayıp uygun Daikin çözümünü netleştirsin. Online ödeme yoktur."
+        title={teklifData?.title || "Ücretsiz Teklif / Keşif"}
+        description={
+          teklifData?.description ||
+          "İhtiyacınızı yazın; ekibimiz sizi arayıp uygun Daikin çözümünü netleştirsin. Online ödeme yoktur."
+        }
         breadcrumbs={[
           { label: "Anasayfa", href: "/" },
           { label: "Teklif Al" },
@@ -42,7 +51,9 @@ export default async function TeklifPage({ searchParams }: Props) {
             <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <p className="font-bold text-emerald-950 text-base">Hızlı Teklif mi İstiyorsunuz?</p>
-                <p className="text-sm text-emerald-800 mt-0.5">Form doldurmakla vakit kaybetmeden doğrudan WhatsApp üzerinden yetkili temsilcimizle görüşün.</p>
+                <p className="text-sm text-emerald-800 mt-0.5">
+                  Form doldurmakla vakit kaybetmeden doğrudan WhatsApp üzerinden yetkili temsilcimizle görüşün.
+                </p>
               </div>
               <Button
                 href={whatsappOfferHref}
@@ -58,7 +69,9 @@ export default async function TeklifPage({ searchParams }: Props) {
 
           <aside className="card-surface h-fit bg-[var(--ice)] p-6 text-sm text-[var(--slate)]">
             <h2 className="text-lg font-semibold text-[var(--navy)]">Hızlı İletişim & WhatsApp</h2>
-            <p className="mt-3">Form yerine doğrudan WhatsApp hattımızdan anında keşif ve fiyat teklifi alabilirsiniz.</p>
+            <p className="mt-3">
+              Form yerine doğrudan WhatsApp hattımızdan anında keşif ve fiyat teklifi alabilirsiniz.
+            </p>
             <div className="mt-4">
               <Button
                 href={whatsappOfferHref}
@@ -69,8 +82,8 @@ export default async function TeklifPage({ searchParams }: Props) {
                 WhatsApp ile Yazın
               </Button>
             </div>
-            <p className="mt-5 font-semibold text-[var(--navy)]">{contact.phones[0].display}</p>
-            <p>{contact.whatsapp.display} (WhatsApp)</p>
+            <p className="mt-5 font-semibold text-[var(--navy)]">{contact.phoneLandline}</p>
+            <p>{contact.whatsapp} (WhatsApp)</p>
             <p className="mt-3 text-xs">{contact.hours}</p>
           </aside>
         </div>

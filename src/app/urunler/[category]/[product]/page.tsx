@@ -7,7 +7,6 @@ import { getCategory, getProduct, products } from "@/content/products";
 import { getSiteContent } from "@/lib/site-content";
 import { createMetadata, breadcrumbJsonLd, productJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { contact } from "@/content/site";
 import { getWhatsAppUrl } from "@/lib/utils";
 
 type Props = { params: Promise<{ category: string; product: string }> };
@@ -19,10 +18,10 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props) {
   const { product: slug } = await params;
   const siteContent = await getSiteContent();
-  const product = getProduct(slug, siteContent.productImages);
+  const product = getProduct(slug, siteContent.productImages, siteContent.productOverrides);
   if (!product) return {};
   return createMetadata({
-    title: product.name,
+    title: `${product.name} | Daikin Yetkili Bayi`,
     description: product.summary,
     path: `/urunler/${product.category}/${product.slug}`,
   });
@@ -31,10 +30,11 @@ export async function generateMetadata({ params }: Props) {
 export default async function ProductPage({ params }: Props) {
   const { category, product: slug } = await params;
   const siteContent = await getSiteContent();
-  const product = getProduct(slug, siteContent.productImages);
-  const cat = getCategory(category);
+  const product = getProduct(slug, siteContent.productImages, siteContent.productOverrides);
+  const cat = getCategory(category, siteContent.categoryOverrides);
   if (!product || !cat || product.category !== category) notFound();
 
+  const contact = siteContent.contact;
   const path = `/urunler/${product.category}/${product.slug}`;
 
   return (
@@ -110,7 +110,7 @@ export default async function ProductPage({ params }: Props) {
             <div className="mt-8 flex flex-wrap gap-3">
               <Button
                 href={getWhatsAppUrl(
-                  contact.whatsapp.display,
+                  contact.whatsapp,
                   `Merhaba, ${product.name} ürünü hakkında fiyat ve teklif bilgisi almak istiyorum.`
                 )}
                 variant="whatsapp"

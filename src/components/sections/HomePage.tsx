@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getCategories, getFeaturedProducts } from "@/content/products";
 import { services } from "@/content/services";
 import { faqs, posts, references } from "@/content/blog";
-import { contact, siteConfig } from "@/content/site";
+import { contact } from "@/content/site";
 import { getSiteContent } from "@/lib/site-content";
 import { Button } from "@/components/ui/Button";
 import { Section, SectionHeading } from "@/components/ui/Section";
@@ -15,8 +15,13 @@ import { getWhatsAppUrl } from "@/lib/utils";
 export async function HomePage() {
   const siteContent = await getSiteContent();
   const cats = getCategories(siteContent.categoryOverrides);
-  const featured = getFeaturedProducts(siteContent.productImages);
+  const featured = getFeaturedProducts(siteContent.productImages, siteContent.productOverrides);
   const blogPosts = siteContent.posts && siteContent.posts.length > 0 ? siteContent.posts : posts;
+  const dynamicServices = siteContent.services && siteContent.services.length > 0 ? siteContent.services : services;
+  const dynamicFaqs = siteContent.faqs && siteContent.faqs.length > 0 ? siteContent.faqs : faqs;
+  const dynamicReferences = siteContent.references && siteContent.references.length > 0 ? siteContent.references : references;
+  const serviceAreaList = siteContent.contact.serviceArea && siteContent.contact.serviceArea.length > 0 ? siteContent.contact.serviceArea : contact.serviceArea;
+  const brandDisplayName = siteContent.contact.brandName || contact.brandName;
 
   const whatsappHref = getWhatsAppUrl(siteContent.contact.whatsapp);
   const whatsappQuoteHref = getWhatsAppUrl(
@@ -39,7 +44,7 @@ export async function HomePage() {
 
   return (
     <>
-      <JsonLd data={[localBusinessJsonLd(), faqJsonLd(faqs)]} />
+      <JsonLd data={[localBusinessJsonLd(), faqJsonLd(dynamicFaqs)]} />
 
       {/* 1. HERO SECTION: Architectural Scale & Layered Depth */}
       <section className="relative overflow-hidden bg-[var(--navy)]">
@@ -108,7 +113,7 @@ export async function HomePage() {
                   <CountUp value={2022} label="Resmi Kuruluş" light />
                 </div>
                 <div>
-                  <CountUp value={contact.serviceArea.length} suffix="+" label="Hizmet İlçesi" light />
+                  <CountUp value={serviceAreaList.length} suffix="+" label="Hizmet İlçesi" light />
                 </div>
               </dl>
             </FadeIn>
@@ -137,7 +142,7 @@ export async function HomePage() {
                       <span className="text-xs font-bold uppercase tracking-wider text-sky-300">
                         Resmi Daikin Partneri
                       </span>
-                      <h3 className="text-lg font-bold text-white">{contact.brandName} İklimlendirme</h3>
+                      <h3 className="text-lg font-bold text-white">{brandDisplayName} İklimlendirme</h3>
                     </div>
                   </div>
 
@@ -579,13 +584,13 @@ export async function HomePage() {
       {/* 5. SERVICE PROCESS: 4-Step Engineering Workflow */}
       <Section className="!py-20">
         <SectionHeading
-          eyebrow="Süreç Yönetimi"
-          title="Keşiften Servise 4 Aşamalı Mühendislik Akışı"
-          description="Şeffaf iletişim, resmi marka standartları ve garantili işçilik ile anahtar teslim süreç."
+          eyebrow={siteContent.homeSections?.workflow?.eyebrow || "Süreç Yönetimi"}
+          title={siteContent.homeSections?.workflow?.title || "Keşiften Servise 4 Aşamalı Mühendislik Akışı"}
+          description={siteContent.homeSections?.workflow?.description || "Şeffaf iletişim, resmi marka standartları ve garantili işçilik ile anahtar teslim süreç."}
         />
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {services.map((service, i) => (
+          {dynamicServices.map((service, i) => (
             <FadeIn key={service.slug} delay={i * 0.06} className="bento-card p-6 flex flex-col justify-between group">
               <div>
                 <div className="flex items-center justify-between">
@@ -621,9 +626,9 @@ export async function HomePage() {
       {/* 6. FEATURED PRODUCTS: Highlighting Popular Series */}
       <Section className="bg-[var(--ice)] !py-20">
         <SectionHeading
-          eyebrow="Öne Çıkan Modeller"
-          title="En Çok Tercih Edilen Daikin Serileri"
-          description="Fiyat karmaşası yerine doğrudan ihtiyaca ve mekana özel net tekliflendirme."
+          eyebrow={siteContent.homeSections?.featuredProducts?.eyebrow || "Öne Çıkan Modeller"}
+          title={siteContent.homeSections?.featuredProducts?.title || "En Çok Tercih Edilen Daikin Serileri"}
+          description={siteContent.homeSections?.featuredProducts?.description || "Fiyat karmaşası yerine doğrudan ihtiyaca ve mekana özel net tekliflendirme."}
         />
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -677,13 +682,13 @@ export async function HomePage() {
       {/* 7. REFERENCES: Sector Trust & Projects */}
       <Section className="!py-20">
         <SectionHeading
-          eyebrow="Referanslar"
-          title="Mühendisliğimize Güvenen Projeler"
-          description="Kamu kurumlarından otelcilik ve perakende devlerine kadar tamamlanan başarılı iklimlendirme projelerimiz."
+          eyebrow={siteContent.homeSections?.references?.eyebrow || "Referanslar"}
+          title={siteContent.homeSections?.references?.title || "Mühendisliğimize Güvenen Projeler"}
+          description={siteContent.homeSections?.references?.description || "Kamu kurumlarından otelcilik ve perakende devlerine kadar tamamlanan başarılı iklimlendirme projelerimiz."}
         />
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {references.map((ref) => (
+          {dynamicReferences.map((ref) => (
             <div key={ref.name} className="bento-card p-6 flex flex-col justify-between">
               <div>
                 {ref.image ? (
@@ -712,13 +717,13 @@ export async function HomePage() {
       <Section className="bg-[var(--ice)] !py-20">
         <SectionHeading
           align="center"
-          eyebrow="Merak Edilenler"
-          title="Sıkça Sorulan Sorular"
-          description="Yetki belgeleri, keşif süreci, garanti kapsamı ve montaj hakkında net cevaplar."
+          eyebrow={siteContent.homeSections?.faq?.eyebrow || "Merak Edilenler"}
+          title={siteContent.homeSections?.faq?.title || "Sıkça Sorulan Sorular"}
+          description={siteContent.homeSections?.faq?.description || "Yetki belgeleri, keşif süreci, garanti kapsamı ve montaj hakkında net cevaplar."}
         />
 
         <div className="mx-auto max-w-3xl space-y-3.5">
-          {faqs.map((faq) => (
+          {dynamicFaqs.map((faq) => (
             <details
               key={faq.question}
               className="bento-card group p-5 transition-all open:ring-1 open:ring-[var(--daikin-blue)]"
@@ -741,12 +746,12 @@ export async function HomePage() {
       <Section className="!py-20">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
           <div>
-            <span className="eyebrow mb-3">Rehberler & Blog</span>
+            <span className="eyebrow mb-3">{siteContent.homeSections?.blog?.eyebrow || "Rehberler & Blog"}</span>
             <h2 className="mt-2 text-3xl font-bold tracking-tight text-[var(--navy)] md:text-4xl">
-              İklimlendirme Uzmanlığı & Tavsiyeler
+              {siteContent.homeSections?.blog?.title || "İklimlendirme Uzmanlığı & Tavsiyeler"}
             </h2>
             <p className="mt-3 text-base text-[var(--slate)] max-w-xl">
-              Doğru klima seçimi, enerji verimliliği ve periyodik bakım hakkında güncel teknik yazılar.
+              {siteContent.homeSections?.blog?.description || "Doğru klima seçimi, enerji verimliliği ve periyodik bakım hakkında güncel teknik yazılar."}
             </p>
           </div>
           <Button href="/blog" variant="ghost">
@@ -822,10 +827,10 @@ export async function HomePage() {
           <div className="relative z-10 mt-8 rounded-2xl border border-white/15 bg-white/10 p-7 shadow-xl backdrop-blur-md md:mt-0 flex flex-col justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-sky-300">
-                Hizmet Verdiğimiz İlçeler (Anadolu Yakası)
+                Hizmet Verdiğimiz İlçeler (Anadolu & Avrupa Yakası)
               </p>
               <div className="mt-4 flex flex-wrap gap-2 text-xs">
-                {contact.serviceArea.map((district) => (
+                {serviceAreaList.map((district) => (
                   <span
                     key={district}
                     className="rounded-md bg-white/10 px-2.5 py-1 text-slate-200 border border-white/10"

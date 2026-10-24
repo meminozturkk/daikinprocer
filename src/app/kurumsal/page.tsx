@@ -2,7 +2,7 @@ import Image from "next/image";
 import { PageHero } from "@/components/ui/PageHero";
 import { Section } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
-import { contact, siteConfig, trustPoints } from "@/content/site";
+import { getSiteContent } from "@/lib/site-content";
 import { createMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { getWhatsAppUrl } from "@/lib/utils";
 
@@ -13,12 +13,32 @@ export const metadata = createMetadata({
   path: "/kurumsal",
 });
 
-export default function KurumsalPage() {
+export default async function KurumsalPage() {
+  const siteContent = await getSiteContent();
+  const kurumsalData = siteContent.pages?.kurumsal;
+  const brandName = siteContent.contact.brandName || "Proser Grup";
+
+  const paragraphs = kurumsalData?.paragraphs && kurumsalData.paragraphs.length > 0
+    ? kurumsalData.paragraphs
+    : [
+        `Proser Grup; iklimlendirme sektörünün lider firmalarında kazanılan ${siteContent.hero.experienceYears} yılı aşkın kurumsal deneyimin verdiği güvene dayanarak 2022 yılında kurulmuştur.`,
+        "Konut, ticari ve endüstriyel yapıların iklimlendirme ihtiyaçlarında danışmanlık, ürün temini, uygulama, otomasyon ve teknik servis süreçlerini bütünleşik yönetiriz.",
+        `Bugün resmi konumumuz: Daikin Yetkili Bayi ve Yetkili Servis. Tüm marka ve ürün iletişimimiz onaylı Daikin kurumsal kimlik kurallarına uygundur.`,
+      ];
+
+  const whatsappHref = getWhatsAppUrl(
+    siteContent.contact.whatsapp,
+    "Merhaba, projemiz için kurumsal iklimlendirme teklifi almak istiyorum."
+  );
+
   return (
     <>
       <PageHero
-        title="Kurumsal"
-        description="İklimlendirme sektöründe birikmiş kurumsal deneyimle 2022’de kurulan Proser Grup; Daikin yetkili bayi ve yetkili servis olarak uçtan uca çözüm sunar."
+        title={kurumsalData?.title || "Kurumsal"}
+        description={
+          kurumsalData?.description ||
+          `İklimlendirme sektöründe birikmiş kurumsal deneyimle 2022’de kurulan ${brandName}; Daikin yetkili bayi ve yetkili servis olarak uçtan uca çözüm sunar.`
+        }
         breadcrumbs={[
           { label: "Anasayfa", href: "/" },
           { label: "Kurumsal" },
@@ -33,7 +53,7 @@ export default function KurumsalPage() {
           <div className="relative aspect-[21/9] min-h-48">
             <Image
               src="/sourced/misc/about.jpg"
-              alt="Proser Grup iklimlendirme ekibi ve uygulamaları"
+              alt={`${brandName} Daikin yetkili bayi ekibi ve uygulamaları`}
               fill
               className="object-cover"
               sizes="100vw"
@@ -43,38 +63,27 @@ export default function KurumsalPage() {
         </div>
         <div className="grid gap-10 lg:grid-cols-2">
           <article className="prose-like space-y-4 text-[var(--slate)]">
-            <p>
-              Proser Grup; iklimlendirme sektörünün lider firmalarında kazanılan {siteConfig.experienceYears}
-              yılı aşkın kurumsal deneyimin verdiği güvene dayanarak {siteConfig.foundedYear} yılında
-              kurulmuştur.
-            </p>
-            <p>
-              Konut, ticari ve endüstriyel yapıların iklimlendirme ihtiyaçlarında danışmanlık, ürün
-              temini, uygulama, otomasyon ve teknik servis süreçlerini bütünleşik yönetiriz.
-            </p>
-            <p>
-              Bugün resmi konumumuz: <strong className="text-[var(--navy)]">{siteConfig.brandClaim}</strong>.
-              Tüm marka ve ürün iletişimimiz onaylı Daikin kurumsal kimlik kurallarına uygundur.
-            </p>
-            <Button
-              href={getWhatsAppUrl(contact.whatsapp.display, "Merhaba, projemiz için kurumsal iklimlendirme teklifi almak istiyorum.")}
-              external
-            >
-              WhatsApp ile Teklif Alın
-            </Button>
+            {paragraphs.map((p, idx) => (
+              <p key={idx}>{p}</p>
+            ))}
+            <div className="pt-2">
+              <Button href={whatsappHref} external>
+                WhatsApp ile Teklif Alın
+              </Button>
+            </div>
           </article>
           <div className="grid gap-4">
-            {trustPoints.map((item) => (
+            {siteContent.trustPoints.map((item) => (
               <div key={item.title} className="card-surface p-5">
                 <h2 className="text-lg font-semibold text-[var(--navy)]">{item.title}</h2>
                 <p className="mt-2 text-sm text-[var(--slate)]">{item.description}</p>
               </div>
             ))}
             <div className="card-surface bg-[var(--ice)] p-5 text-sm text-[var(--slate)]">
-              <p className="font-semibold text-[var(--navy)]">Merkez</p>
-              <p className="mt-2">{contact.address.full}</p>
-              <p className="mt-1">{contact.phones[0].display}</p>
-              <p>{contact.email}</p>
+              <p className="font-semibold text-[var(--navy)]">Hizmet Merkezi</p>
+              <p className="mt-2">{siteContent.contact.addressFull}</p>
+              <p className="mt-1 font-semibold text-[var(--navy)]">{siteContent.contact.phoneLandline}</p>
+              <p>{siteContent.contact.email}</p>
             </div>
           </div>
         </div>

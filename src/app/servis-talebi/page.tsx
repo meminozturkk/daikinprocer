@@ -2,7 +2,7 @@ import { PageHero } from "@/components/ui/PageHero";
 import { Section } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { ServiceForm } from "@/components/forms/LeadForms";
-import { contact } from "@/content/site";
+import { getSiteContent } from "@/lib/site-content";
 import { createMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { getWhatsAppUrl } from "@/lib/utils";
 
@@ -13,17 +13,24 @@ export const metadata = createMetadata({
   path: "/servis-talebi",
 });
 
-export default function ServisTalebiPage() {
+export default async function ServisTalebiPage() {
+  const siteContent = await getSiteContent();
+  const contact = siteContent.contact;
+  const servisData = siteContent.pages?.servisTalebi;
+
   const whatsappServiceHref = getWhatsAppUrl(
-    contact.whatsapp.display,
+    contact.whatsapp,
     "Merhaba, Daikin cihazım için yetkili servis / arıza / bakım talebinde bulunmak istiyorum."
   );
 
   return (
     <>
       <PageHero
-        title="Servis Talebi"
-        description="Arıza, bakım veya yerinde kontrol için talebinizi iletin. Yetkili servis ekibimiz dönüş yapar."
+        title={servisData?.title || "Servis Talebi"}
+        description={
+          servisData?.description ||
+          "Arıza, bakım veya yerinde kontrol için talebinizi iletin. Yetkili servis ekibimiz dönüş yapar."
+        }
         breadcrumbs={[
           { label: "Anasayfa", href: "/" },
           { label: "Servis Talebi" },
@@ -39,7 +46,9 @@ export default function ServisTalebiPage() {
             <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <p className="font-bold text-emerald-950 text-base">Hızlı Servis Kaydı mı İstiyorsunuz?</p>
-                <p className="text-sm text-emerald-800 mt-0.5">Form doldurmak yerine doğrudan WhatsApp servis hattımıza yazarak anında kayıt oluşturabilirsiniz.</p>
+                <p className="text-sm text-emerald-800 mt-0.5">
+                  Form doldurmak yerine doğrudan WhatsApp servis hattımıza yazarak anında kayıt oluşturabilirsiniz.
+                </p>
               </div>
               <Button
                 href={whatsappServiceHref}
@@ -70,12 +79,20 @@ export default function ServisTalebiPage() {
             </div>
             <div className="mt-6 pt-5 border-t border-slate-100">
               <p className="text-xs font-semibold uppercase tracking-wider text-[var(--slate)]">Acil Telefon Hatları</p>
-              <a href={contact.phones[0].href} className="mt-2 block text-xl font-bold text-[var(--navy)] hover:text-[var(--daikin-blue)] transition">
-                {contact.phones[0].display}
+              <a
+                href={`tel:${contact.phoneLandline.replace(/[\s-]/g, "")}`}
+                className="mt-2 block text-xl font-bold text-[var(--navy)] hover:text-[var(--daikin-blue)] transition"
+              >
+                {contact.phoneLandline}
               </a>
-              <a href={contact.phones[1].href} className="mt-1 block font-semibold text-[var(--navy)] hover:text-[var(--daikin-blue)] transition">
-                {contact.phones[1].display}
-              </a>
+              {contact.phoneMobile ? (
+                <a
+                  href={`tel:${contact.phoneMobile.replace(/[\s-]/g, "")}`}
+                  className="mt-1 block font-semibold text-[var(--navy)] hover:text-[var(--daikin-blue)] transition"
+                >
+                  {contact.phoneMobile}
+                </a>
+              ) : null}
             </div>
           </aside>
         </div>

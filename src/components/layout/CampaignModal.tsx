@@ -3,21 +3,28 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { getWhatsAppUrl } from "@/lib/utils";
+import { useSiteContent } from "@/lib/SiteContentContext";
 
 const STORAGE_KEY = "proser_campaign_modal_seen_at";
 const LEGACY_STORAGE_KEY = "proser_campaign_modal_seen";
-const COOLDOWN_MS = 10 * 60 * 1000; // 10 minutes
-
-const CAMPAIGN_WHATSAPP_HREF = getWhatsAppUrl(
-  "0 536 860 87 70",
-  "Merhaba, İlk Bakım Hediye kampanyanız hakkında bilgi ve teklif almak istiyorum."
-);
 
 export function CampaignModal() {
   const [isOpen, setIsOpen] = useState(false);
-  const campaignWhatsAppHref = CAMPAIGN_WHATSAPP_HREF;
+  const { campaign, contact } = useSiteContent();
+
+  const isEnabled = campaign?.enabled ?? true;
+  const campaignWhatsAppHref = getWhatsAppUrl(
+    contact.whatsapp || "0 536 860 87 70",
+    campaign?.whatsappMessage || "Merhaba, İlk Bakım Hediye kampanyanız hakkında bilgi ve teklif almak istiyorum."
+  );
+  const cooldownMs = (campaign?.cooldownMinutes || 10) * 60 * 1000;
+
+  const handleClose = () => {
+    setIsOpen(false);
+  };
 
   useEffect(() => {
+    if (!isEnabled) return;
     try {
       // Remove legacy boolean key if present
       sessionStorage.removeItem(LEGACY_STORAGE_KEY);
@@ -26,8 +33,8 @@ export function CampaignModal() {
       const lastSeen = lastSeenStr ? parseInt(lastSeenStr, 10) : 0;
       const now = Date.now();
 
-      // Show if first time or 10 minutes have passed since last view
-      if (!lastSeen || isNaN(lastSeen) || now - lastSeen >= COOLDOWN_MS) {
+      // Show if first time or cooldown has passed since last view
+      if (!lastSeen || isNaN(lastSeen) || now - lastSeen >= cooldownMs) {
         const timer = setTimeout(() => {
           setIsOpen(true);
           const timestamp = Date.now().toString();
@@ -39,11 +46,7 @@ export function CampaignModal() {
     } catch {
       // In case storage is restricted in specific browser privacy modes
     }
-  }, []);
-
-  const handleClose = () => {
-    setIsOpen(false);
-  };
+  }, [isEnabled, cooldownMs]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -58,7 +61,7 @@ export function CampaignModal() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isEnabled || !isOpen) return null;
 
   return (
     <div
@@ -93,8 +96,8 @@ export function CampaignModal() {
           className="relative block aspect-[1024/558] w-full overflow-hidden bg-slate-100 group"
         >
           <Image
-            src="/campaigns/ilk-bakim-hediye.jpg"
-            alt="Proser Grup İlk Bakım Hediye Kampanyası"
+            src={campaign?.image || "/campaigns/ilk-bakim-hediye.jpg"}
+            alt={campaign?.alt || "Daikin Yetkili Bayi Kampanyası"}
             fill
             sizes="(max-width: 768px) 100vw, 850px"
             priority
@@ -105,7 +108,7 @@ export function CampaignModal() {
         {/* Action Bar */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-white p-3.5 sm:px-6">
           <p className="text-xs sm:text-sm font-medium text-[var(--slate)]">
-            Daikin klima ve VRV sistemlerinde geçerli özel kampanya.
+            {campaign?.subtitle || "Daikin klima ve VRV sistemlerinde geçerli özel kampanya."}
           </p>
           <div className="flex items-center gap-2">
             <button
@@ -122,7 +125,7 @@ export function CampaignModal() {
               onClick={handleClose}
               className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#25D366] px-5 py-2 text-xs sm:text-sm font-bold text-white shadow-md hover:bg-[#1ebe57] transition"
             >
-              WhatsApp ile Teklif Al →
+              {campaign?.buttonText || "WhatsApp ile Teklif Al →"}
             </a>
           </div>
         </div>

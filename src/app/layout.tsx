@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
-import { contact, siteConfig } from "@/content/site";
+import { siteConfig } from "@/content/site";
 import { getSiteContent } from "@/lib/site-content";
 import { SiteContentProvider } from "@/lib/SiteContentContext";
 import { SiteShell } from "@/components/layout/SiteShell";

@@ -30,13 +30,45 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "OK" }, { status: 200 });
   }
 
-  // Production: wire RESEND_API_KEY / SMTP via env. Logged for local/dev visibility.
-  console.info("[teklif]", {
+  // Save to leads database
+  const { saveLead } = await import("@/lib/leads");
+  const { getSiteContent } = await import("@/lib/site-content");
+
+  const newLead = await saveLead({
+    type: "teklif",
     name: parsed.data.name,
     phone: parsed.data.phone,
+    email: parsed.data.email,
     city: parsed.data.city,
     productInterest: parsed.data.productInterest,
+    message: parsed.data.message,
   });
 
-  return NextResponse.json({ ok: true });
+  // Generate WhatsApp notification URL
+  const siteContent = await getSiteContent();
+  const rawWa = siteContent.contact.whatsapp || siteContent.contact.phoneMobile || "905448802220";
+  let cleanWa = rawWa.replace(/\D/g, "");
+  if (cleanWa.startsWith("0")) cleanWa = "90" + cleanWa.slice(1);
+  if (!cleanWa.startsWith("90")) cleanWa = "90" + cleanWa;
+
+  const waText = [
+    "🔔 *YENİ TEKLİF TALEBİ* (Daikin Proser Web)",
+    `👤 *Ad Soyad:* ${parsed.data.name}`,
+    `📞 *Telefon:* ${parsed.data.phone}`,
+    parsed.data.city ? `📍 *Bölge / İlçe:* ${parsed.data.city}` : "",
+    parsed.data.productInterest ? `❄️ *Ürün / Sistem:* ${parsed.data.productInterest}` : "",
+    parsed.data.message ? `📝 *Mesaj:* ${parsed.data.message}` : "",
+    `🆔 *Kayıt No:* ${newLead.id}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  const whatsappUrl = `https://wa.me/${cleanWa}?text=${encodeURIComponent(waText)}`;
+
+  return NextResponse.json({
+    ok: true,
+    leadId: newLead.id,
+    whatsappUrl,
+    message: "Talebiniz başarıyla kaydedildi.",
+  });
 }

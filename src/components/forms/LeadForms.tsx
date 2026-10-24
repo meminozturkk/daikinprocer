@@ -13,6 +13,7 @@ export function QuoteForm({
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errors, setErrors] = useState<FieldErrors>({});
   const [message, setMessage] = useState("");
+  const [whatsappUrl, setWhatsappUrl] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -20,6 +21,7 @@ export function QuoteForm({
     setStatus("loading");
     setErrors({});
     setMessage("");
+    setWhatsappUrl(null);
 
     const form = new FormData(formElement);
     const payload = {
@@ -34,7 +36,7 @@ export function QuoteForm({
         body: JSON.stringify(payload),
       });
       const text = await res.text();
-      let data: { message?: string; errors?: FieldErrors } = {};
+      let data: { message?: string; errors?: FieldErrors; whatsappUrl?: string } = {};
       try {
         data = text ? JSON.parse(text) : {};
       } catch {
@@ -50,6 +52,9 @@ export function QuoteForm({
       }
       setStatus("success");
       setMessage("Talebiniz alındı. En kısa sürede sizi arayacağız.");
+      if (data.whatsappUrl) {
+        setWhatsappUrl(data.whatsappUrl);
+      }
       formElement.reset();
     } catch (err) {
       setStatus("error");
@@ -102,11 +107,24 @@ export function QuoteForm({
       <Button type="submit" size="lg" className="w-full md:w-auto">
         {status === "loading" ? "Gönderiliyor..." : "Ücretsiz Teklif İste"}
       </Button>
-      {message ? (
-        <p
-          role="status"
-          className={status === "success" ? "text-sm text-emerald-700" : "text-sm text-red-600"}
-        >
+      {status === "success" && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 space-y-3">
+          <p className="font-semibold text-emerald-800">✅ {message || "Talebiniz başarıyla alındı!"}</p>
+          <p className="text-xs text-emerald-700">Talebiniz sisteme kaydedildi. Dilerseniz hemen WhatsApp üzerinden yetkilimizle de paylaşabilirsiniz:</p>
+          {whatsappUrl && (
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#1EBE5D] transition-colors"
+            >
+              <span>💬 WhatsApp ile Hemen Gönder / Bildir</span>
+            </a>
+          )}
+        </div>
+      )}
+      {status === "error" && message ? (
+        <p role="status" className="text-sm text-red-600">
           {message}
         </p>
       ) : null}
@@ -118,6 +136,7 @@ export function ServiceForm() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errors, setErrors] = useState<FieldErrors>({});
   const [message, setMessage] = useState("");
+  const [whatsappUrl, setWhatsappUrl] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -125,6 +144,7 @@ export function ServiceForm() {
     setStatus("loading");
     setErrors({});
     setMessage("");
+    setWhatsappUrl(null);
 
     const form = new FormData(formElement);
     const payload = {
@@ -139,7 +159,7 @@ export function ServiceForm() {
         body: JSON.stringify(payload),
       });
       const text = await res.text();
-      let data: { message?: string; errors?: FieldErrors } = {};
+      let data: { message?: string; errors?: FieldErrors; whatsappUrl?: string } = {};
       try {
         data = text ? JSON.parse(text) : {};
       } catch {
@@ -155,6 +175,9 @@ export function ServiceForm() {
       }
       setStatus("success");
       setMessage("Servis talebiniz alındı. Ekibimiz sizinle iletişime geçecek.");
+      if (data.whatsappUrl) {
+        setWhatsappUrl(data.whatsappUrl);
+      }
       formElement.reset();
     } catch (err) {
       setStatus("error");
@@ -216,11 +239,24 @@ export function ServiceForm() {
       <Button type="submit" size="lg" variant="secondary">
         {status === "loading" ? "Gönderiliyor..." : "Servis Talebi Gönder"}
       </Button>
-      {message ? (
-        <p
-          role="status"
-          className={status === "success" ? "text-sm text-emerald-700" : "text-sm text-red-600"}
-        >
+      {status === "success" && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 space-y-3">
+          <p className="font-semibold text-emerald-800">✅ {message || "Servis talebiniz alındı!"}</p>
+          <p className="text-xs text-emerald-700">Talebiniz kaydedildi. Hızlı servis ve anlık teyit için WhatsApp hattımıza tek tıkla bildirebilirsiniz:</p>
+          {whatsappUrl && (
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#1EBE5D] transition-colors"
+            >
+              <span>💬 WhatsApp ile Servis Talebini Bildir</span>
+            </a>
+          )}
+        </div>
+      )}
+      {status === "error" && message ? (
+        <p role="status" className="text-sm text-red-600">
           {message}
         </p>
       ) : null}
