@@ -103,7 +103,7 @@ for (const [src, alt] of collected) {
     }
     const buf = await res.body();
     fs.writeFileSync(dest, buf);
-    manifest.push({ src: abs, local: `/sourced/${rel}`, alt, bytes: buf.length });
+    manifest.push({ src: abs, local: `/sourced/${rel}`, alt: (alt || "").trim(), bytes: buf.length });
     console.log("SAVED", rel, buf.length);
   } catch (e) {
     console.warn("DOWNLOAD ERR", src, e.message);

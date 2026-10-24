@@ -39,20 +39,24 @@ export function Header() {
       </div>
 
       <div className="container-pro flex items-center justify-between gap-4 py-3">
-        <Link href="/" className="focus-ring flex items-center gap-3 rounded-lg">
+        <Link href="/" className="focus-ring flex items-center gap-3.5 rounded-lg group">
           <Image
             src="/sourced/brand/logo.png"
-            alt="Proser Grup"
+            alt="Proser Grup - Daikin Yetkili Bayi ve Yetkili Servis"
             width={160}
             height={40}
-            className="h-10 w-auto"
+            className="h-9 sm:h-10 w-auto"
             priority
           />
-          <span className="hidden sm:block">
-            <span className="block text-[11px] font-medium text-[var(--daikin-blue-dark)]">
-              Daikin Yetkili Bayi & Servis
+          <div className="hidden h-7 w-px bg-slate-200 sm:block" />
+          <div className="hidden sm:flex flex-col leading-tight">
+            <span className="text-xs font-extrabold tracking-widest text-[#0097e6] uppercase">
+              DAIKIN
             </span>
-          </span>
+            <span className="text-[10px] font-bold text-[var(--navy)] tracking-tight">
+              Yetkili Bayi & Servis
+            </span>
+          </div>
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Ana menü">

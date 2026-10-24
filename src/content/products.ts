@@ -4,68 +4,68 @@ import metkanProducts from "./generated/metkan-products.json";
 export const categories: Category[] = [
   {
     slug: "bireysel-klimalar",
-    name: "Bireysel Klimalar",
+    name: "Daikin Bireysel Klimalar",
     shortName: "Bireysel",
     description:
       "Ev ve ofisler için Daikin duvar tipi inverter klimalar. Sessiz çalışma, yüksek enerji sınıfı ve akıllı kontrol.",
-    seoTitle: "Daikin Bireysel Klima | Proser Grup Kartal",
+    seoTitle: "Daikin Bireysel Klimalar | Proser Grup Daikin Yetkili Bayi",
     seoDescription:
       "Daikin Sensira, Shira Plus, Perfera, Emura ve Stylish bireysel klimalar. Proser Grup Daikin yetkili bayi Kartal / İstanbul.",
     image: "/sourced/products/duvar-tipi.jpg",
   },
   {
     slug: "multi-split",
-    name: "Multi Split Sistemler",
+    name: "Daikin Multi Split Sistemler",
     shortName: "Multi",
     description:
       "Tek dış ünite ile birden fazla odayı bağımsız iklimlendirin. Balanslı yük ve düşük dış ünite alanı.",
-    seoTitle: "Daikin Multi Split Klima | Proser Grup",
+    seoTitle: "Daikin Multi Split Klima Sistemleri | Proser Grup Yetkili Bayi",
     seoDescription:
-      "Daikin multi split sistemleri ile çok odalı konut ve ofis çözümleri. Keşif ve teklif için Proser Grup.",
+      "Daikin multi split sistemleri ile çok odalı konut ve ofis çözümleri. Keşif ve teklif için Proser Grup Daikin yetkili bayi.",
     image: "/sourced/products/multi.jpg",
   },
   {
     slug: "ticari-klimalar",
-    name: "Ticari Klimalar (Sky Air)",
+    name: "Daikin Sky Air Ticari Klimalar",
     shortName: "Ticari",
     description:
       "Mağaza, restoran, ofis ve butik ticari alanlar için güçlü ısıtma-soğutma performanslı Sky Air çözümleri.",
-    seoTitle: "Daikin Sky Air Ticari Klima | Proser Grup",
+    seoTitle: "Daikin Sky Air Ticari Klimalar | Proser Grup",
     seoDescription:
-      "Daikin Sky Air kaset, kanallı ve yer-tavan tipi ticari klimalar. Proser Grup satış ve montaj.",
+      "Daikin Sky Air kaset, kanallı ve yer-tavan tipi ticari klimalar. Proser Grup Daikin yetkili satış ve montaj.",
     image: "/sourced/products/ticari.jpg",
   },
   {
     slug: "vrv-sistemleri",
-    name: "VRV Merkezi Sistemler",
+    name: "Daikin VRV Merkezi Sistemler",
     shortName: "VRV",
     description:
       "Ofis, otel, AVM ve endüstriyel yapılarda esnek, verimli ve merkezi kontrol edilebilir VRV iklimlendirme.",
-    seoTitle: "Daikin VRV Sistemleri | Proser Grup",
+    seoTitle: "Daikin VRV Merkezi Klima Sistemleri | Proser Grup",
     seoDescription:
-      "Daikin VRV merkezi klima sistemleri: projelendirme, montaj ve servis. Proser Grup Kartal.",
+      "Daikin VRV merkezi klima sistemleri: projelendirme, montaj ve yetkili servis. Proser Grup Kartal İstanbul.",
     image: "/sourced/products/vrf.jpg",
   },
   {
     slug: "isi-pompalari",
-    name: "Altherma Isı Pompaları",
+    name: "Daikin Altherma Isı Pompaları",
     shortName: "Altherma",
     description:
       "Isınma ve sıcak su için enerji verimli Daikin Altherma havadan suya ısı pompası sistemleri.",
-    seoTitle: "Daikin Altherma Isı Pompası | Proser Grup",
+    seoTitle: "Daikin Altherma Isı Pompaları | Proser Grup Yetkili Bayi",
     seoDescription:
-      "Daikin Altherma ısı pompaları ile düşük işletme maliyetli ısıtma ve sıcak su. Proser Grup yetkili bayi.",
+      "Daikin Altherma ısı pompaları ile düşük işletme maliyetli ısıtma ve sıcak su. Proser Grup Daikin yetkili bayi.",
     image: "/sourced/products/isi-pompasi.jpg",
   },
   {
     slug: "havalandirma",
-    name: "Havalandırma & Hava Kalitesi",
+    name: "Daikin Havalandırma Sistemleri",
     shortName: "Hava",
     description:
       "Taze hava, ısı geri kazanım ve hava temizleme çözümleriyle sağlıklı iç ortam hava kalitesi.",
-    seoTitle: "Daikin Havalandırma ve Hava Temizleme | Proser Grup",
+    seoTitle: "Daikin Havalandırma ve Hava Kalitesi Çözümleri | Proser Grup",
     seoDescription:
-      "Daikin havalandırma ve hava kalitesi ürünleri. Proser Grup keşif, satış ve uygulama.",
+      "Daikin havalandırma, VAM ısı geri kazanım ve hava temizleme ürünleri. Proser Grup yetkili keşif, satış ve uygulama.",
     image: "/sourced/products/havalandirma.jpg",
   },
 ];

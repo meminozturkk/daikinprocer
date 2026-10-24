@@ -14,9 +14,11 @@ export function createMetadata({
   image?: string;
 }): Metadata {
   const url = absoluteUrl(path);
-  const fullTitle = title.includes("Proser")
-    ? title
-    : `${title} | ${contact.brandName}`;
+  const fullTitle = title.includes("Daikin")
+    ? title.includes("Proser")
+      ? title
+      : `${title} | Proser Grup Daikin Yetkili Bayi`
+    : `${title} | Daikin Yetkili Bayi Proser Grup`;
 
   return {
     // Bypass root layout title template to avoid "Brand | Brand" duplication.
@@ -28,7 +30,7 @@ export function createMetadata({
       type: "website",
       locale: siteConfig.locale,
       url,
-      siteName: contact.brandName,
+      siteName: "Daikin Yetkili Bayi - Proser Grup",
       title: fullTitle,
       description,
       images: [{ url: absoluteUrl(image), width: 1200, height: 630, alt: fullTitle }],
@@ -39,7 +41,17 @@ export function createMetadata({
       description,
       images: [absoluteUrl(image)],
     },
-    robots: { index: true, follow: true },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
+    },
   };
 }
 
@@ -47,25 +59,76 @@ export function localBusinessJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": ["HVACBusiness", "LocalBusiness"],
-    name: contact.legalName,
-    alternateName: contact.brandName,
-    description: contact.tagline,
+    "@id": `${siteConfig.siteUrl}/#organization`,
+    name: "Proser Grup - Daikin Yetkili Bayi ve Yetkili Servis",
+    alternateName: ["Daikin Proser Grup", "Daikin Kartal Yetkili Bayi", "Daikin Yetkili Servis Kartal"],
+    legalName: contact.legalName,
+    description: "Kartal ve İstanbul Anadolu Yakası resmi Daikin Yetkili Bayi ve Yetkili Servisi. Daikin inverter klimalar, VRV merkezi iklimlendirme sistemleri, Altherma ısı pompaları, mühendislik keşfi, garantili montaj ve teknik servis desteği.",
     url: siteConfig.siteUrl,
     telephone: contact.phones[0]?.display,
     email: contact.email,
     image: absoluteUrl("/sourced/brand/logo.png"),
+    logo: absoluteUrl("/brand/daikin-logo.svg"),
+    priceRange: "$$",
+    currenciesAccepted: "TRY",
+    paymentAccepted: "Cash, Credit Card, Bank Transfer",
+    brand: {
+      "@type": "Brand",
+      name: "Daikin",
+      url: "https://www.daikin.com.tr",
+    },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: "40.9167",
+      longitude: "29.2167",
+    },
     address: {
       "@type": "PostalAddress",
       streetAddress: contact.address.street,
       addressLocality: contact.address.district,
       addressRegion: contact.address.city,
+      postalCode: "34870",
       addressCountry: "TR",
     },
     areaServed: contact.serviceArea.map((name) => ({
       "@type": "AdministrativeArea",
-      name,
+      name: `${name}, İstanbul`,
     })),
-    openingHours: "Mo-Sa 09:00-18:00",
+    openingHoursSpecification: [
+      {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        opens: "09:00",
+        closes: "18:00",
+      },
+    ],
+    knowsAbout: [
+      "Daikin",
+      "Daikin Yetkili Bayi",
+      "Daikin Yetkili Servis",
+      "Daikin Bireysel Klimalar (Sensira, Shira Plus, Perfera, Emura, Stylish, Ururu Sarara)",
+      "Daikin Multi Split Klima Sistemleri",
+      "Daikin Sky Air Ticari Klimalar",
+      "Daikin VRV IV ve VRV V Merkezi İklimlendirme",
+      "Daikin Altherma Isı Pompası Sistemleri",
+      "Klima Montajı, Borulama, Vakumlama ve Devreye Alma",
+      "Klima Periyodik Bakımı, Filtre Hijyeni ve Gaz Şarjı",
+      "Kartal ve İstanbul Anadolu Yakası İklimlendirme Mühendisliği",
+    ],
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: "Daikin İklimlendirme Ürün ve Hizmetleri",
+      itemListElement: [
+        {
+          "@type": "OfferCatalog",
+          name: "Daikin Klimalar ve Isı Pompaları",
+        },
+        {
+          "@type": "OfferCatalog",
+          name: "Daikin Yetkili Servis, Montaj ve Bakım Hizmetleri",
+        },
+      ],
+    },
     sameAs: [],
   };
 }
